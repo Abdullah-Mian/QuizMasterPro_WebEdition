@@ -34,7 +34,19 @@ sql.connect(config, err => {
 
 app.get('/COURSE', async(req, res) => {
   try { const pool  = await sql.connect(config);
-  const data =  pool.request().query('SELECT * FROM COURSE');
+  const data =  pool.request().query('SELECT * FROM StudentCourses');
+  data.then(res1=>{
+    res.json(res1);
+  }
+  );
+} catch (err) {
+    console.error('SQL error', err);
+    res.status(500).send('SQL error');
+  }
+});
+app.get('/ch', async(req, res) => {
+  try { const pool  = await sql.connect(config);
+  const data =  pool.request().query('SELECT * FROM course');
   data.then(res1=>{
     res.json(res1);
   }
