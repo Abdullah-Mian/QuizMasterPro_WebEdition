@@ -1,12 +1,12 @@
 // src/App.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import './App.css';
 import Login from './Login';
+import { AuthContext, AuthProvider } from './AuthContext';
 
 function App() {
+  const { username, password, setUsername, setPassword } = useContext(AuthContext);
   const [courses, setCourses] = useState([]);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -53,7 +53,7 @@ function App() {
     setCourses([]);
     setError(null);
   };
-
+  console.log('courses:', courses);
   return (
     <div className="App">
       <header className="App-header">
@@ -82,6 +82,7 @@ function App() {
               <div className="courses-list">
                 <h2>Course List</h2>
                 
+                  
               </div>
             )}
           </div>
@@ -91,4 +92,10 @@ function App() {
   );
 }
 
-export default App;
+export default function AppWrapper() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}

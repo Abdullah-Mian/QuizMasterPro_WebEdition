@@ -1,24 +1,28 @@
 // src/Login.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from './AuthContext';
 
 const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const { setUsername, setPassword } = useContext(AuthContext);
+  const [localUsername, setLocalUsername] = useState('');
+  const [localPassword, setLocalPassword] = useState('');
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Logging in with:',username, password);
+      console.log('Logging in with:', localUsername, localPassword);
       const response = await fetch('http://localhost:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: localUsername, password: localPassword }),
       });
       const data = await response.json();
       if (response.ok) {
         setMessage(data.message);
-        onLogin(username, password);
+        setUsername(localUsername);
+        setPassword(localPassword);
+        onLogin(localUsername, localPassword);
       } else {
         setMessage(data.error || 'Login failed');
       }
@@ -38,8 +42,8 @@ const Login = ({ onLogin }) => {
           <input
             type="text"
             id="username"
-            value={username}
-            onChange={(e) => {setUsername(e.target.value);console.log('username:',e.target.value)}}
+            value={localUsername}
+            onChange={(e) => {setLocalUsername(e.target.value); console.log('username:', e.target.value)}}
             required
           />
         </div>
@@ -49,8 +53,8 @@ const Login = ({ onLogin }) => {
           <input
             type="password"
             id="password"
-            value={password}
-            onChange={(e) => {setPassword(e.target.value);console.log('password:',e.target.value)}}
+            value={localPassword}
+            onChange={(e) => {setLocalPassword(e.target.value); console.log('password:', e.target.value)}}
             required
           />
         </div>

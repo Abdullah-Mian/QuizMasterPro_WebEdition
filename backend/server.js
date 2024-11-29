@@ -3,31 +3,24 @@ const express = require("express");
 const sql = require("mssql");
 const cors = require("cors");
 const app = express();
-
-// Add logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  next();
-});
-
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:3000', // Adjust this to match your frontend's URL
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const port = 3000;
 
-let username ;
-let password ;
 // User login endpoint
 app.post('/login', async (req, res) => {
   console.log('Login attempt:', req.body);
   const { username, password } = req.body;
-  username = username;
-  password = password;
   const config = {
     user: username,
     password: password,
     server: 'quizmasterweb.database.windows.net',
-    database: 'SampleDB',
+    database: 'QuizMaster_WebEdition',
     options: {
       encrypt: true,
       trustServerCertificate: false,
@@ -51,6 +44,9 @@ app.post('/login', async (req, res) => {
 const authenticate = (req, res, next) => {
   console.log('Authenticate middleware - Headers:', req.headers);
   
+  const username = req.headers['x-username'];
+  const password = req.headers['x-password'];
+
   if (!username || !password) {
     console.log('Missing credentials');
     return res.status(401).json({ error: 'Credentials required' });
@@ -60,7 +56,7 @@ const authenticate = (req, res, next) => {
     user: username,
     password: password,
     server: 'quizmasterweb.database.windows.net',
-    database: 'SampleDB',
+    database: '',
     options: {
       encrypt: true,
       trustServerCertificate: false,
@@ -83,7 +79,18 @@ const authenticate = (req, res, next) => {
 app.get('/data', authenticate, async (req, res) => {
   console.log('Data endpoint reached');
   try {
-    const pool = await sql.connect(config);
+    const pool = await sql.connect({
+      user: req.headers.username,
+      password: req.headers.password,
+      server: 'quizmasterweb.database.windows.net',
+      database: 'QuizMaster_WebEdition',
+      options: {
+        encrypt: true,
+        trustServerCertificate: false,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
     const result = await pool.request().query('SELECT * FROM SalesLT.Address');
     console.log('Query executed successfully');
     res.json(result.recordset);
