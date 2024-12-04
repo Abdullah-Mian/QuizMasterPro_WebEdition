@@ -1,0 +1,44 @@
+Entity "Admin" will have PK "Admin_ID"
+Entity "Admin" will have column "role" (for sub-admin & super admin)
+
+Sub-ADMIN &super admin merged into "Admin"
+Students enrolled by Admin and Expel by Admin
+
+Entity of Degree Programs 1-N relations with Entity "Course"
+Entity "Degree_Program" will have PK "DEG_PRG"
+
+Entity "Student" N-1 relation with Entity "Degree_Program"
+Entity "Student" N-M relation with Entity "Course"
+
+Entity "Course" will have PK "Course_Code"
+
+Entity "Question Bank" with String identifier with name of "course code"
+ahead of that will be a String of Question
+ahead of that will be solution key as String As PK
+
+Entity "solution Bank"
+solution key will be FK
+column A as option 1
+column B as option 2 and so on upto option 4.
+last column as solution Character
+
+Entity "Quiz_Session"
+PK Session_ID
+-Student_ID
+-Course_Code
+
+Entity "Timestamp"
+FK Session_ID
+Start_time
+end_time -- at form submission
+
+Entity "Student_progress"
+-FK quiz_id REFEREMCES Session_ID
+-scholastic_status
+-marks
+
+Entity "Attempted_Quiz"
+FK Session_ID
+-Question_String
+-actual_ans_character
+-Students_ans_character
