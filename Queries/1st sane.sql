@@ -104,7 +104,7 @@ CREATE TABLE Attempted_Quiz
 ----------------------------------------------------------------------------------------------------
 -- Create roles
 CREATE ROLE Student;
-CREATE ROLE Admin;
+CREATE ROLE SuperAdmin;
 
 -- Grant permissions to Student role
 GRANT SELECT ON Deg_Program TO Student;
