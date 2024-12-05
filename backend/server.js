@@ -10,7 +10,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-const port = 3000;
+const port = 3000; // Ensure the port is set to 3000
 
 // User login endpoint
 app.post("/login", async (req, res) => {
@@ -19,7 +19,7 @@ app.post("/login", async (req, res) => {
   const config = {
     user: username,
     password: password,
-    server: "quizmasterpro.c568mee42lu.eu-north-1.rds.amazonaws.com",
+    server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
     database: "quizmasterpro",
     options: {
       encrypt: true,
@@ -162,6 +162,99 @@ app.get("/students", authenticate, async (req, res) => {
     const result = await pool.request().query("SELECT * FROM Student");
     console.log("Query executed successfully");
     res.json(result.recordset);
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
+// Endpoint for fetching degree programs
+app.get("/degreeprograms", authenticate, async (req, res) => {
+  console.log("Degree programs endpoint reached");
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+    const result = await pool.request().query("SELECT * FROM Deg_Program");
+    console.log("Query executed successfully");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
+// Endpoint for fetching students
+app.get("/students", authenticate, async (req, res) => {
+  console.log("Students endpoint reached");
+  const degProg = req.query.degProg;
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+    const result = await pool
+      .request()
+      .query(`SELECT * FROM Student WHERE Deg_Prog = '${degProg}'`);
+    console.log("Query executed successfully");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
+// Endpoint for enrolling students
+app.post("/enrollstudent", authenticate, async (req, res) => {
+  console.log("Enroll student endpoint reached");
+  const { studentName, studentUsername, degreeProgram } = req.body;
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    // Create login for the student
+    await pool.request().query(`
+      CREATE LOGIN ${studentUsername} WITH PASSWORD = 'SecurePassword123!';
+      CREATE USER ${studentUsername} FOR LOGIN ${studentUsername};
+      ALTER ROLE Student ADD MEMBER ${studentUsername};
+    `);
+
+    // Add student to the Student table
+    await pool.request().query(`
+      INSERT INTO Student (StudentName, Username, Deg_Prog)
+      VALUES ('${studentName}', '${studentUsername}', '${degreeProgram}');
+    `);
+
+    console.log("Student enrolled successfully");
+    res.json({ message: "Student enrolled successfully" });
   } catch (err) {
     console.error("SQL error:", err);
     res.status(500).json({ error: "SQL error" });

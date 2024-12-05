@@ -1,55 +1,32 @@
 // src/AdminDashboard.js
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext } from "react";
 import { AuthContext } from "./AuthContext";
+import { Routes, Route, Link } from "react-router-dom";
+import DegreePrograms from "./DegreePrograms";
+import Students from "./Students";
+import EnrollStudent from "./EnrollStudent"; // Ensure this path is correct
 
 const AdminDashboard = () => {
-  const { username, password } = useContext(AuthContext);
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch("http://localhost:3000/students", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "x-username": username,
-            "x-password": password,
-          },
-        });
-        const data = await response.json();
-        if (response.ok) {
-          setStudents(data);
-        } else {
-          setError(data.error || "Failed to fetch students");
-        }
-      } catch (error) {
-        setError("Error connecting to server");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, [username, password]);
+  const { username } = useContext(AuthContext);
 
   return (
-    <div className="dashboard">
-      <h2>Admin Dashboard</h2>
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
-      {!loading && !error && (
-        <ul>
-          {/* {students.map((student, index) => (
-            <li key={index}>{student.StudentName}</li>
-          ))} */}
-        </ul>
-      )}
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
+      <p className="mb-4">Logged in as: {username}</p>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl">Degree Programs</h3>
+        <Link
+          to="enroll"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Enroll Student
+        </Link>
+      </div>
+      <Routes>
+        <Route path="/" element={<DegreePrograms />} />
+        <Route path="students/:degProg" element={<Students />} />
+        <Route path="enroll" element={<EnrollStudent />} />
+      </Routes>
     </div>
   );
 };

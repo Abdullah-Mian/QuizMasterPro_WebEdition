@@ -13,6 +13,7 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     try {
       console.log("Logging in with:", localUsername, localPassword);
+      console.log("gonna post to http://localhost:3000/login");
       const response = await fetch("http://localhost:3000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,6 +34,7 @@ const Login = ({ onLogin }) => {
       }
     } catch (error) {
       console.error("Error logging in:", error);
+      console.log("Login failed form Login.js");
       setMessage("Login failed");
     }
   };

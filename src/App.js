@@ -30,8 +30,10 @@ function App() {
         });
         const data = await response.json();
         if (response.ok) {
+          console.log(data);
           setVerified(true);
         } else {
+          console.log(data);
           setError(data.error || "Failed to verify user");
           console.error("Failed to verify user:", data.error);
           handleLogout();
@@ -58,45 +60,47 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Welcome to QuizMasterPro</h1>
-        {!username || !password ? (
-          <Login
-            onLogin={(username, password) => {
-              setUsername(username);
-              setPassword(password);
-            }}
-          />
-        ) : (
-          <div className="dashboard">
-            <div className="user-info">
-              <p>Logged in as: {username}</p>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
-              >
-                Logout
-              </button>
-            </div>
-
-            {loading && <p>Loading...</p>}
-
-            {error && (
-              <div className="error-message">
-                <p>Error: {error}</p>
+        <h1 className="text-center">Welcome to QuizMasterPro</h1>
+        <div className="container-center">
+          {!username || !password ? (
+            <Login
+              onLogin={(username, password) => {
+                setUsername(username);
+                setPassword(password);
+              }}
+            />
+          ) : (
+            <div className="dashboard">
+              <div className="navbar bg-blue-500 text-white p-4 flex justify-between items-center">
+                <p>{username}</p>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
+                >
+                  Logout
+                </button>
               </div>
-            )}
 
-            {!loading && !error && verified && (
-              <>
-                {loginType === "admin" ? (
-                  <AdminDashboard />
-                ) : (
-                  <StudentDashboard />
-                )}
-              </>
-            )}
-          </div>
-        )}
+              {loading && <p>Loading...</p>}
+
+              {error && (
+                <div className="error-message">
+                  <p>Error: {error}</p>
+                </div>
+              )}
+
+              {!loading && !error && verified && (
+                <>
+                  {loginType === "admin" ? (
+                    <AdminDashboard />
+                  ) : (
+                    <StudentDashboard />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </header>
     </div>
   );
