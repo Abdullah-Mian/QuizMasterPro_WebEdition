@@ -89,6 +89,7 @@ const Login = ({ onLogin }) => {
                 type="radio"
                 name="loginType"
                 value="admin"
+                required
                 checked={loginType === "admin"}
                 onChange={(e) => {
                   setLocalLoginType(e.target.value);
@@ -102,6 +103,7 @@ const Login = ({ onLogin }) => {
               <input
                 type="radio"
                 name="loginType"
+                required
                 value="student"
                 checked={loginType === "student"}
                 onChange={(e) => {

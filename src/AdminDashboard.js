@@ -4,7 +4,7 @@ import { AuthContext } from "./AuthContext";
 import { Routes, Route, Link } from "react-router-dom";
 import DegreePrograms from "./DegreePrograms";
 import Students from "./Students";
-import EnrollStudent from "./EnrollStudent"; // Ensure this path is correct
+import EnrollStudent from "./EnrollStudent";
 
 const AdminDashboard = () => {
   const { username } = useContext(AuthContext);

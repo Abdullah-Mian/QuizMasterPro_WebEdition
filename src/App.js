@@ -1,6 +1,9 @@
 import React, { useEffect, useContext, useState } from "react";
 import "./App.css";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./Login";
+import Home from "./Home";
+import Navigation from "./Navigation";
 import { AuthContext } from "./AuthContext";
 import StudentDashboard from "./StudentDashboard";
 import AdminDashboard from "./AdminDashboard";
@@ -8,6 +11,7 @@ import AdminDashboard from "./AdminDashboard";
 function App() {
   const { username, password, loginType, setUsername, setPassword } =
     useContext(AuthContext);
+  const navigate = useNavigate();
   const [verified, setVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,6 +36,11 @@ function App() {
         if (response.ok) {
           console.log(data);
           setVerified(true);
+          if (loginType === "admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/student/dashboard");
+          }
         } else {
           console.log(data);
           setError(data.error || "Failed to verify user");
@@ -55,53 +64,46 @@ function App() {
     setPassword("");
     setVerified(false);
     setError(null);
+    navigate("/");
   };
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1 className="text-center">Welcome to QuizMasterPro</h1>
-        <div className="container-center">
-          {!username || !password ? (
+      <Navigation />
+      <Routes>
+        <Route index element={<Home />} path="/" />
+        <Route
+          path="/login"
+          element={
             <Login
               onLogin={(username, password) => {
                 setUsername(username);
                 setPassword(password);
               }}
             />
-          ) : (
-            <div className="dashboard">
-              <div className="navbar bg-blue-500 text-white p-4 flex justify-between items-center">
-                <p>{username}</p>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                >
-                  Logout
-                </button>
-              </div>
-
-              {loading && <p>Loading...</p>}
-
-              {error && (
-                <div className="error-message">
-                  <p>Error: {error}</p>
-                </div>
-              )}
-
-              {!loading && !error && verified && (
-                <>
-                  {loginType === "admin" ? (
-                    <AdminDashboard />
-                  ) : (
-                    <StudentDashboard />
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </header>
+          }
+        />
+        <Route
+          path="/admin/*"
+          element={
+            verified && loginType === "admin" ? (
+              <AdminDashboard />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/student/*"
+          element={
+            verified && loginType === "student" ? (
+              <StudentDashboard />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
     </div>
   );
 }
