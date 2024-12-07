@@ -1,3 +1,13 @@
+import { Link } from "react-router-dom";
+const EnrollStudent = () => {
+  return (
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">Enroll Student</h2>
+      <Link to={"/admin"}>back to AdminDashboard</Link>
+    </div>
+  );
+};
+export default EnrollStudent;
 // // src/EnrollStudent.js
 // import React, { useState, useContext } from "react";
 // import { AuthContext } from "./AuthContext";

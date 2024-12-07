@@ -1,47 +1,72 @@
 // src/Navigation.js
-import React from "react";
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 
 const Navigation = () => {
-  const { username, setUsername, setPassword, setLoginType } =
+  const { username, setUsername, setPassword, setLoginType, setVerified } =
     React.useContext(AuthContext);
   const navigate = useNavigate();
-
+  const { loginType } = React.useContext(AuthContext);
   const handleLogout = () => {
     setUsername("");
     setPassword("");
     setLoginType("");
+    setVerified(false);
     navigate("/");
   };
 
   return (
-    <nav className="bg-blue-500 text-white p-4 shadow-lg">
+    <nav className="navbar p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">
           QuizMasterPro
         </Link>
         <div className="flex space-x-4">
-          <Link to="/dashboard" className="hover:underline">
+          {loginType === "admin" && (
+            <Link
+              to="/admin/enroll"
+              className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
+              style={{ minWidth: "100px" }}
+            >
+              Entorll Students
+            </Link>
+          )}
+
+          <Link
+            to={loginType === "admin" ? "/admin" : "/student"}
+            className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
+            style={{ minWidth: "100px" }}
+          >
             Dashboard
           </Link>
-          <Link to="/progress" className="hover:underline">
+          <Link
+            to="/progress"
+            className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
+            style={{ minWidth: "100px" }}
+          >
             Progress
           </Link>
-          <Link to="/analytics" className="hover:underline">
+          <Link
+            to="/analytics"
+            className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
+            style={{ minWidth: "100px" }}
+          >
             Analytics
           </Link>
           {username ? (
             <button
               onClick={handleLogout}
-              className="bg-red-500 px-4 py-2 rounded hover:bg-red-600"
+              className="px-4 py-2 rounded  hover:text-[#07ada0] text-center"
+              style={{ minWidth: "100px" }}
             >
               Logout
             </button>
           ) : (
             <Link
               to="/login"
-              className="bg-green-500 px-4 py-2 rounded hover:bg-green-600"
+              className="px-4 py-2 rounded  hover:text-[#07ada0] text-center"
+              style={{ minWidth: "100px" }}
             >
               Login
             </Link>

@@ -7,24 +7,19 @@ import Students from "./Students";
 import EnrollStudent from "./EnrollStudent";
 
 const AdminDashboard = () => {
-  const { username } = useContext(AuthContext);
+  const { username, userData } = useContext(AuthContext);
+  console.log(userData); // Ensure this logs the correct data
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
-      <p className="mb-4">Logged in as: {username}</p>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl">Degree Programs</h3>
-        <Link
-          to="enroll"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Enroll Student
-        </Link>
-      </div>
+      <p className="mb-4">
+        Logged in as: {JSON.stringify(userData[0].AdminName)}
+      </p>
+
       <Routes>
         <Route path="/" element={<DegreePrograms />} />
-        <Route path="students/:degProg" element={<Students />} />
+        {/* <Route path="degProg/:students" element={<Students />} /> */}
         <Route path="enroll" element={<EnrollStudent />} />
       </Routes>
     </div>

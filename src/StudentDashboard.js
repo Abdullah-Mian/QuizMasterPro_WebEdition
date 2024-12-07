@@ -1,6 +1,8 @@
 // src/StudentDashboard.js
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "./AuthContext";
+import { Routes, Route, Link } from "react-router-dom";
+import DegreePrograms from "./DegreePrograms";
 
 const StudentDashboard = () => {
   const { username, password } = useContext(AuthContext);
@@ -39,17 +41,20 @@ const StudentDashboard = () => {
   }, [username, password]);
 
   return (
-    <div className="dashboard">
-      <h2>Student Dashboard</h2>
+    <div className="dashboard p-4">
+      <h2 className="text-2xl font-bold mb-4">Student Dashboard</h2>
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error}</p>}
       {!loading && !error && (
-        <ul>
-          {/* {courses.map((course, index) => (
+        <ul className="list-disc pl-5">
+          {courses.map((course, index) => (
             <li key={index}>{course.Course_Name}</li>
-          ))} */}
+          ))}
         </ul>
       )}
+      <Routes>
+        <Route path="/" element={<DegreePrograms />} />
+      </Routes>
     </div>
   );
 };

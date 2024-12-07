@@ -3,7 +3,8 @@ import React, { useState, useContext } from "react";
 import { AuthContext } from "./AuthContext";
 
 const Login = ({ onLogin }) => {
-  const { setUsername, setPassword, setLoginType } = useContext(AuthContext);
+  const { setUsername, setPassword, setLoginType, setVerified } =
+    useContext(AuthContext);
   const [localUsername, setLocalUsername] = useState("");
   const [localPassword, setLocalPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -28,6 +29,7 @@ const Login = ({ onLogin }) => {
         setUsername(localUsername);
         setPassword(localPassword);
         setLoginType(loginType); // Set login type in context
+        setVerified(true); // Set verified to true
         onLogin(localUsername, localPassword);
       } else {
         setMessage(data.error || "Login failed");
@@ -40,15 +42,17 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen bg-gray-900">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow-md w-full max-w-md"
+        className="bg-gray-800 p-8 rounded shadow-md w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-white">
+          Login
+        </h2>
 
         <div className="mb-4">
-          <label htmlFor="username" className="block text-gray-700 mb-2">
+          <label htmlFor="username" className="block text-gray-300 mb-2">
             Username:
           </label>
           <input
@@ -60,12 +64,12 @@ const Login = ({ onLogin }) => {
               console.log("username:", e.target.value);
             }}
             required
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-600 rounded bg-gray-700 text-white"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 mb-2">
+          <label htmlFor="password" className="block text-gray-300 mb-2">
             Password:
           </label>
           <input
@@ -77,19 +81,18 @@ const Login = ({ onLogin }) => {
               console.log("password:", e.target.value);
             }}
             required
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 border border-gray-600 rounded bg-gray-700 text-white"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Login Type:</label>
+          <label className="block text-gray-300 mb-2">Login Type:</label>
           <div className="flex justify-between">
             <label className="flex items-center">
               <input
                 type="radio"
                 name="loginType"
                 value="admin"
-                required
                 checked={loginType === "admin"}
                 onChange={(e) => {
                   setLocalLoginType(e.target.value);
@@ -103,7 +106,6 @@ const Login = ({ onLogin }) => {
               <input
                 type="radio"
                 name="loginType"
-                required
                 value="student"
                 checked={loginType === "student"}
                 onChange={(e) => {

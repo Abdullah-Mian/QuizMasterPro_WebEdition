@@ -9,10 +9,17 @@ import StudentDashboard from "./StudentDashboard";
 import AdminDashboard from "./AdminDashboard";
 
 function App() {
-  const { username, password, loginType, setUsername, setPassword } =
-    useContext(AuthContext);
+  const {
+    username,
+    password,
+    loginType,
+    setUsername,
+    setPassword,
+    verified,
+    setVerified,
+    setUserData,
+  } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [verified, setVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -34,12 +41,13 @@ function App() {
         });
         const data = await response.json();
         if (response.ok) {
-          console.log(data);
+          console.log("Verification data:", data); // Log the entire response
+          setUserData(data.data); // Ensure you are setting the correct part of the response
           setVerified(true);
           if (loginType === "admin") {
-            navigate("/admin/dashboard");
+            navigate("/admin");
           } else {
-            navigate("/student/dashboard");
+            navigate("/student");
           }
         } else {
           console.log(data);
@@ -66,12 +74,15 @@ function App() {
     setError(null);
     navigate("/");
   };
-
+  console.log("from app.js Verified:", verified);
+  console.log("from app.js loginType:", loginType);
   return (
     <div className="App">
       <Navigation />
+      {loading && <p>Loading...</p>}
+      {error && <p>Error: {error}</p>}
       <Routes>
-        <Route index element={<Home />} path="/" />
+        <Route path="/" element={<Home />} />
         <Route
           path="/login"
           element={

@@ -106,21 +106,26 @@ app.get("/userverification", authenticate, async (req, res) => {
     }
 
     const result = await pool.request().query(query);
+    console.log("Query result:", result); // Log the entire result object
     if (result.recordset.length === 0) {
       return res.status(401).json({ error: "User verification failed" });
     }
 
     console.log("User verification successful");
-    res.json({ message: "User verification successful" });
+    res.json({
+      message: "User verification successful",
+      data: result.recordset,
+    });
   } catch (err) {
     console.error("SQL error:", err);
     res.status(500).json({ error: "SQL error" });
   }
 });
 
-// Endpoint for fetching courses
+// Endpoint for fetching courses by degree program
 app.get("/courses", authenticate, async (req, res) => {
   console.log("Courses endpoint reached");
+  const degProg = req.query.degProg;
   try {
     const pool = await sql.connect({
       user: req.headers["x-username"],
@@ -134,7 +139,9 @@ app.get("/courses", authenticate, async (req, res) => {
         enableArithAbort: true,
       },
     });
-    const result = await pool.request().query("SELECT * FROM Course");
+    const result = await pool
+      .request()
+      .query(`SELECT * FROM Course WHERE Deg_Prog = '${degProg}'`);
     console.log("Query executed successfully");
     res.json(result.recordset);
   } catch (err) {

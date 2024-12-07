@@ -9,9 +9,48 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #121212; /* Shiny black background */
+  color: #e0e0e0; /* Light white text */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+a {
+  color: #1877f2; /* Facebook blue for links */
+}
+
+a:hover {
+  color: #ffffff; /* White on hover */
+}
+
+button {
+  /* background-color: #1877f2; Facebook blue for buttons */
+  color: #3d7a7a; /* Black text on buttons */
+}
+
+button:hover {
+  /* background-color: #3d7a7a; */
+  color: #3d7a7a; /* Black text on hover */
+}
+
+.navbar {
+  background-color: #1f1f1f; /* Darker black for navbar */
+  color: #e0e0e0; /* Light white text */
+}
+
+.navbar a {
+  color: #3d7a7a; /* Light white text */
+}
+
+.navbar a:hover {
+  color: #07ada0; /* Facebook blue on hover */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
