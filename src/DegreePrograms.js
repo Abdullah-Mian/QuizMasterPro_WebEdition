@@ -1,11 +1,13 @@
 // src/DegreePrograms.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "./AuthContext";
+import { DegreeProgramsContext } from "./DegreeProgramsContext";
 
 const DegreePrograms = () => {
-  const { username, password } = React.useContext(AuthContext);
-  const [degreePrograms, setDegreePrograms] = useState([]);
-  const [courses, setCourses] = useState({});
+  const { username, password } = useContext(AuthContext);
+  const { degreePrograms, setDegreePrograms, courses, setCourses } = useContext(
+    DegreeProgramsContext
+  );
   const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
@@ -30,8 +32,10 @@ const DegreePrograms = () => {
       }
     };
 
-    fetchDegreePrograms();
-  }, [username, password]);
+    if (degreePrograms.length === 0) {
+      fetchDegreePrograms();
+    }
+  }, [username, password, degreePrograms, setDegreePrograms]);
 
   const fetchCourses = async (degProg) => {
     try {
@@ -52,6 +56,7 @@ const DegreePrograms = () => {
           ...prevCourses,
           [degProg]: data,
         }));
+        console.log("Courses in context: ", courses);
       } else {
         console.error("Failed to fetch courses:", data.error);
       }
@@ -93,7 +98,10 @@ const DegreePrograms = () => {
               <div className="mt-4 space-y-2">
                 {courses[degProg.Deg_Prog] ? (
                   courses[degProg.Deg_Prog].map((course, courseIndex) => (
-                    <div key={courseIndex} className="pl-4">
+                    <div
+                      key={courseIndex}
+                      className="pl-4 border-t border-b border-gray-300 rounded-lg p-4 bg-gray-800 text-white"
+                    >
                       {course.Course_Code} - {course.Course_Name}
                     </div>
                   ))

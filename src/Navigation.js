@@ -17,7 +17,7 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="navbar p-4 shadow-lg">
+    <nav className="navbar p-4 shadow-lg sticky top-0 bg-white z-50">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">
           QuizMasterPro
@@ -29,7 +29,7 @@ const Navigation = () => {
               className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
               style={{ minWidth: "100px" }}
             >
-              Entorll Students
+              Enorll Students
             </Link>
           )}
 

@@ -1,0 +1,83 @@
+// src/DegreeProgramsContext.js
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { AuthContext } from "./AuthContext";
+
+export const DegreeProgramsContext = createContext({
+  degreePrograms: [],
+  setDegreePrograms: () => {},
+  courses: {},
+  setCourses: () => {},
+});
+
+export const DegreeProgramsProvider = ({ children }) => {
+  const [degreePrograms, setDegreePrograms] = useState([]);
+  const [courses, setCourses] = useState({});
+  const { username, password } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchDegreePrograms = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/degreeprograms", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-username": username,
+            "x-password": password,
+          },
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setDegreePrograms(data);
+        } else {
+          console.error("Failed to fetch degree programs:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching degree programs:", error);
+      }
+    };
+
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/courses", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-username": username,
+            "x-password": password,
+          },
+        });
+        const data = await response.json();
+        if (response.ok) {
+          const coursesByDegree = data.reduce((acc, course) => {
+            if (!acc[course.Deg_Prog]) {
+              acc[course.Deg_Prog] = [];
+            }
+            acc[course.Deg_Prog].push(course);
+            return acc;
+          }, {});
+          setCourses(coursesByDegree);
+        } else {
+          console.error("Failed to fetch courses:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchDegreePrograms();
+    fetchCourses();
+  }, [username, password]);
+
+  return (
+    <DegreeProgramsContext.Provider
+      value={{
+        degreePrograms,
+        setDegreePrograms,
+        courses,
+        setCourses,
+      }}
+    >
+      {children}
+    </DegreeProgramsContext.Provider>
+  );
+};

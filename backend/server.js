@@ -231,7 +231,13 @@ app.get("/students", authenticate, async (req, res) => {
 // Endpoint for enrolling students
 app.post("/enrollstudent", authenticate, async (req, res) => {
   console.log("Enroll student endpoint reached");
-  const { studentName, studentUsername, degreeProgram } = req.body;
+  const {
+    studentName,
+    studentUsername,
+    studentPassword,
+    degreeProgram,
+    courses,
+  } = req.body;
 
   try {
     const pool = await sql.connect({
@@ -249,16 +255,27 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
 
     // Create login for the student
     await pool.request().query(`
-      CREATE LOGIN ${studentUsername} WITH PASSWORD = 'SecurePassword123!';
+      CREATE LOGIN ${studentUsername} WITH PASSWORD = '${studentPassword}';
       CREATE USER ${studentUsername} FOR LOGIN ${studentUsername};
       ALTER ROLE Student ADD MEMBER ${studentUsername};
     `);
 
     // Add student to the Student table
-    await pool.request().query(`
+    const result = await pool.request().query(`
       INSERT INTO Student (StudentName, Username, Deg_Prog)
       VALUES ('${studentName}', '${studentUsername}', '${degreeProgram}');
+      SELECT SCOPE_IDENTITY() AS StudentID;
     `);
+
+    const studentID = result.recordset[0].StudentID;
+
+    // Add courses to the Student_Course table
+    for (const courseId of courses) {
+      await pool.request().query(`
+        INSERT INTO Student_Course (StudentID, Course_id)
+        VALUES (${studentID}, ${courseId});
+      `);
+    }
 
     console.log("Student enrolled successfully");
     res.json({ message: "Student enrolled successfully" });

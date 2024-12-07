@@ -9,12 +9,26 @@ import EnrollStudent from "./EnrollStudent";
 const AdminDashboard = () => {
   const { username, userData } = useContext(AuthContext);
   console.log(userData); // Ensure this logs the correct data
+  // Add CSS to hide the scrollbar but still allow scrolling
+  const hideScrollbarStyle = {
+    overflow: "auto",
+    scrollbarWidth: "none", // For Firefox
+    msOverflowStyle: "none", // For Internet Explorer and Edge
+  };
+
+  // For Webkit browsers like Chrome and Safari
+  const hideScrollbarWebkit = `
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  `;
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
+    <div className="p-4" style={hideScrollbarStyle}>
+      <style>{hideScrollbarWebkit}</style>
+      <h2 className="text-2xl font-bold mb-4 text-center">Admin Dashboard</h2>
       <p className="mb-4">
-        Logged in as: {JSON.stringify(userData[0].AdminName)}
+        Welcome back {JSON.stringify(userData[0].AdminName)}
       </p>
 
       <Routes>

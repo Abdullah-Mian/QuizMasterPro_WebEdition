@@ -28,7 +28,7 @@ function App() {
       if (!username || !password || !loginType) return;
       setLoading(true);
       setError(null);
-
+      console.log("fetching data from app.js");
       try {
         const response = await fetch(`http://localhost:3000/userverification`, {
           method: "GET",

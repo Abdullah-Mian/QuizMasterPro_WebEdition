@@ -45,6 +45,10 @@ button:hover {
   color: #3d7a7a; /* Light white text */
 }
 
+a {
+  color: #3d7a7a;
+}
+
 .navbar a:hover {
   color: #07ada0; /* Facebook blue on hover */
 }
