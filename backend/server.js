@@ -2,6 +2,15 @@
 const express = require("express");
 const sql = require("mssql");
 const cors = require("cors");
+const dotenv = require("dotenv");
+
+// Load environment variables from .env file
+dotenv.config();
+const DB_USER = process.env.MASTER_DB_USER;
+const DB_PASSWORD = process.env.MASTER_DB_PASSWORD;
+console.log("DB_USER:", DB_USER);
+console.log("DB_PASSWORD:", DB_PASSWORD);
+
 const app = express();
 const corsOptions = {
   origin: "http://localhost:3000", // Adjust this to match your frontend's URL
@@ -235,11 +244,10 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
     degreeProgram,
     courses,
   } = req.body;
-
   try {
     const pool = await sql.connect({
-      user: req.headers["x-username"],
-      password: req.headers["x-password"],
+      user: DB_USER,
+      password: DB_PASSWORD,
       server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
       database: "quizmasterpro",
       options: {
@@ -249,7 +257,9 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
         enableArithAbort: true,
       },
     });
-
+    if (pool) {
+      console.log("Connected to the database using master user's credentials");
+    }
     // Convert courses array to XML format
     const coursesXML = `<Courses>${courses
       .map((courseId) => `<CourseID>${courseId}</CourseID>`)

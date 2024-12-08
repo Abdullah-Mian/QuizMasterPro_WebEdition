@@ -1,14 +1,18 @@
+-- Create Database
 CREATE DATABASE quizmasterpro;
 GO
-Use quizmasterpro;
 
+USE quizmasterpro;
+GO
 
+-- Create Tables
 -- Table for Degree Program
 CREATE TABLE Deg_Program
 (
     Deg_Prog NVARCHAR(255) PRIMARY KEY,
     Deg_Prog_Name NVARCHAR(255) UNIQUE
 );
+GO
 
 -- Table for Admins
 CREATE TABLE Admins
@@ -18,6 +22,7 @@ CREATE TABLE Admins
     Username NVARCHAR(255) UNIQUE NOT NULL,
     AdminRole NVARCHAR(255) NOT NULL
 );
+GO
 
 -- Table for Students
 CREATE TABLE Student
@@ -29,6 +34,7 @@ CREATE TABLE Student
     FOREIGN KEY (Deg_Prog) REFERENCES Deg_Program(Deg_Prog)
     -- Foreign key constraint
 );
+GO
 
 -- Table for Courses
 CREATE TABLE Course
@@ -41,6 +47,7 @@ CREATE TABLE Course
     FOREIGN KEY (Deg_Prog) REFERENCES Deg_Program(Deg_Prog)
     -- Foreign key constraint
 );
+GO
 
 -- Table for Student-Course Relationship
 CREATE TABLE Student_Course
@@ -54,7 +61,9 @@ CREATE TABLE Student_Course
     FOREIGN KEY (Course_id) REFERENCES Course(Course_id) ON DELETE CASCADE
     -- Cascade deletion if a course is removed
 );
+GO
 
+-- Table for Question Bank
 CREATE TABLE Question_Bank
 (
     QuestionID INT PRIMARY KEY IDENTITY,
@@ -64,7 +73,9 @@ CREATE TABLE Question_Bank
     Course_Code NVARCHAR(50) NOT NULL
     -- Links the question to a course
 );
+GO
 
+-- Table for Option Bank
 CREATE TABLE Option_Bank
 (
     OptionID INT PRIMARY KEY IDENTITY,
@@ -76,7 +87,9 @@ CREATE TABLE Option_Bank
     FOREIGN KEY (QuestionID) REFERENCES Question_Bank(QuestionID) ON DELETE CASCADE
     -- Ensures options are deleted with their question
 );
+GO
 
+-- Table for Answer Key
 CREATE TABLE Answer_Key
 (
     AnswerID INT PRIMARY KEY IDENTITY,
@@ -89,8 +102,9 @@ CREATE TABLE Answer_Key
     -- Ensures answers are deleted with their question
     FOREIGN KEY (CorrectOptionID) REFERENCES Option_Bank(OptionID)
 );
----------------------------------------
+GO
 
+-- Table for Quiz Session
 CREATE TABLE Quiz_Session
 (
     Quiz_SessionID INT PRIMARY KEY IDENTITY,
@@ -116,7 +130,9 @@ CREATE TABLE Quiz_Session
     FOREIGN KEY (StudentID) REFERENCES Student(StudentID) ON DELETE CASCADE,
     FOREIGN KEY (Course_id) REFERENCES Course(Course_id) ON DELETE CASCADE
 );
+GO
 
+-- Table for Attempted Quiz
 CREATE TABLE Attempted_Quiz
 (
     AttemptID INT PRIMARY KEY IDENTITY,
@@ -133,62 +149,9 @@ CREATE TABLE Attempted_Quiz
     -- Whether the student's answer was correct (1 for true, 0 for false)
     FOREIGN KEY (Quiz_SessionID) REFERENCES Quiz_Session(Quiz_SessionID) ON DELETE CASCADE
 );
-
-
-----------------------------------------------------------------------------------------------------
--- Create roles
-CREATE ROLE Student;
-CREATE ROLE SuperAdmin;
-
--- Grant permissions to Student role
-GRANT SELECT ON Deg_Program TO Student;
-GRANT SELECT ON Course TO Student;
-GRANT SELECT ON Question_Bank TO Student;
-GRANT SELECT, INSERT, UPDATE ON Attempted_Quiz TO Student;
-GRANT SELECT ON Student TO Student;
-
--- Grant permissions to Admin role
-GRANT SELECT, INSERT, UPDATE, DELETE ON Student TO SuperAdmin;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Deg_Program TO SuperAdmin;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Course TO SuperAdmin;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Question_Bank TO SuperAdmin;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Option_Bank TO SuperAdmin;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Answer_Key TO SuperAdmin;
-GRANT SELECT, INSERT, UPDATE, DELETE ON Admins TO SuperAdmin;
-
--- Grant permissions to Admin role
-GRANT EXECUTE ON OBJECT::dbo.EnrollStudent TO SuperAdmin;
-GRANT CREATE LOGIN TO SuperAdmin;
-GRANT ALTER ANY LOGIN TO SuperAdmin;
-GRANT CREATE USER TO SuperAdmin;
-GRANT ALTER ANY USER TO SuperAdmin;
-GRANT ALTER ANY ROLE TO SuperAdmin;
-
--- Create login and user for a student
-CREATE LOGIN StudentLogin1 WITH PASSWORD = 'SecurePassword123!';
-CREATE USER StudentUser1 FOR LOGIN StudentLogin1;
-ALTER ROLE Student ADD MEMBER StudentUser1;
-
--- Create login and user for an SuperAdmin
-CREATE LOGIN AdminLogin1 WITH PASSWORD = 'AdminSecurePass!';
 GO
-CREATE USER AdminUser1 FOR LOGIN AdminLogin1;
-GO
-ALTER ROLE SuperAdmin ADD MEMBER AdminUser1;
------------------------------------------------------------------------------------------
--- SELECT * FROM Admins WHERE Username = '${username}' AND AdminRole = 'admin'
--- SELECT * FROM Student WHERE Username = '${username}'
-INSERT INTO Admins
-    (AdminName, Username, AdminRole)
-VALUES
-    ('Admin1', 'AdminLogin1', 'admin');
-select *
-from Admins;
-INSERT INTO Student
-    (StudentName, Username, Deg_Prog)
-VALUES
-    ('Student1', 'StudentLogin1', 'BSCS');
 
+-- Populate Tables
 INSERT INTO Deg_Program
     (Deg_Prog, Deg_Prog_Name)
 VALUES
@@ -199,6 +162,7 @@ VALUES
     ('BSME', 'Bachelor of Science in Mechanical Engineering'),
     ('BSIT', 'Bachelor of Science in Information Technology'),
     ('BBA', 'Bachelor of Business Administration');
+GO
 
 INSERT INTO Course
     (Course_Code, Course_Name, Deg_Prog)
@@ -237,107 +201,191 @@ VALUES
     ('BA101', 'Principles of Management', 'BBA'),
     ('BA102', 'Business Communication', 'BBA'),
     ('BA103', 'Marketing Fundamentals', 'BBA');
-
-
-SELECT *
-FROM Course;
------------------------------------------------------------------------------------------
-
---CREATE PROCEDURE EnrollStudent
---    @StudentName NVARCHAR(255),
---    @StudentUsername NVARCHAR(255),
---    @StudentPassword NVARCHAR(255),
---    @DegreeProgram NVARCHAR(255),
---    @Courses NVARCHAR(MAX)
---AS
---BEGIN
---    SET NOCOUNT ON;
---    BEGIN TRANSACTION;
-
---  BEGIN TRY
-        -- Create login for the student
---        DECLARE @Login NVARCHAR(255) = @StudentUsername;
---        DECLARE @CreateLogin NVARCHAR(MAX);
---        SET @CreateLogin = 'CREATE LOGIN [' + @Login + '] WITH PASSWORD = ''' + @StudentPassword + '''';
---        EXEC sp_executesql @CreateLogin;
-
-        -- Create user for the login
---        DECLARE @CreateUser NVARCHAR(MAX);
---        SET @CreateUser = 'CREATE USER [' + @StudentUsername + '] FOR LOGIN [' + @Login + ']';
---        EXEC sp_executesql @CreateUser;
-
-        -- Add the user to the Student role
---        DECLARE @AddToRole NVARCHAR(MAX);
---        SET @AddToRole = 'ALTER ROLE [Student] ADD MEMBER [' + @StudentUsername + ']';
---        EXEC sp_executesql @AddToRole;
-
-        -- Add student to the Student table
---        DECLARE @StudentID INT;
---        INSERT INTO Student
---        (StudentName, Username, Deg_Prog)
---    VALUES
---        (@StudentName, @StudentUsername, @DegreeProgram);
---        SELECT @StudentID = SCOPE_IDENTITY();
-
-        -- Add courses to the Student_Course table
---        DECLARE @CourseID INT;
---        DECLARE @XMLCourses XML = CAST(@Courses AS XML);
---        DECLARE CourseCursor CURSOR FOR
---            SELECT T.C.value('.', 'INT') AS CourseID
---    FROM @XMLCourses.nodes('/Courses/CourseID') AS T(C);
-
---        OPEN CourseCursor;
---        FETCH NEXT FROM CourseCursor INTO @CourseID;
-
---        WHILE @@FETCH_STATUS = 0
---        BEGIN
---        INSERT INTO Student_Course
---            (StudentID, Course_id)
---        VALUES
---            (@StudentID, @CourseID);
-
---        FETCH NEXT FROM CourseCursor INTO @CourseID;
---    END;
-
---        CLOSE CourseCursor;
---        DEALLOCATE CourseCursor;
-
---        COMMIT;
---        PRINT 'Student enrolled successfully';
---    END TRY
---    BEGIN CATCH
---        ROLLBACK;
---        PRINT ERROR_MESSAGE();
---        THROW;
---    END CATCH;
---END;
-
-------------------------------------------------------------
-USE master;
 GO
 
-CREATE LOGIN SuperAdmin WITH PASSWORD = 'YourSecurePassword';
+INSERT INTO Admins
+    (AdminName, Username, AdminRole)
+VALUES
+    ('Admin1', 'AdminLogin1', 'admin');
+GO
 
-CREATE SERVER ROLE [SuperAdminRole];
+INSERT INTO Student
+    (StudentName, Username, Deg_Prog)
+VALUES
+    ('Student1', 'StudentLogin1', 'BSCS');
+GO
 
-GRANT CREATE LOGIN TO [SuperAdminRole];
-GRANT ALTER ANY LOGIN TO [SuperAdminRole];
+-- Create Roles and Grant Permissions
+-- Create roles
+CREATE ROLE Student;
+CREATE ROLE SuperAdmin;
+GO
 
---SELECT 
---    dp.name AS PrincipalName,
---    dp.type_desc AS PrincipalType,
---    p.permission_name,
---    p.state_desc AS PermissionState
---FROM 
---    sys.server_permissions p
---JOIN 
---    sys.server_principals dp ON p.grantee_principal_id = dp.principal_id
---WHERE 
---    p.permission_name = 'CREATE LOGIN' AND dp.name = 'abdullah';
+-- Grant permissions to Student role
+GRANT SELECT ON Deg_Program TO Student;
+GRANT SELECT ON Course TO Student;
+GRANT SELECT ON Question_Bank TO Student;
+GRANT SELECT, INSERT, UPDATE ON Attempted_Quiz TO Student;
+GRANT SELECT ON Student TO Student;
+GO
 
-GRANT CREATE LOGIN TO [abdullah];
+-- Grant permissions to SuperAdmin role
+GRANT SELECT, INSERT, UPDATE, DELETE ON Student TO SuperAdmin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Deg_Program TO SuperAdmin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Course TO SuperAdmin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Question_Bank TO SuperAdmin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Option_Bank TO SuperAdmin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Answer_Key TO SuperAdmin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Admins TO SuperAdmin;
+GRANT EXECUTE ON OBJECT::dbo.EnrollStudent TO SuperAdmin;
+GRANT CREATE USER TO SuperAdmin;
+GRANT ALTER ANY USER TO SuperAdmin;
+GRANT ALTER ANY ROLE TO SuperAdmin;
+GO
 
-GRANT CREATE LOGIN TO [SuperAdminRole];
-GRANT ALTER ANY LOGIN TO [SuperAdminRole];
-GRANT CREATE LOGIN TO [abdullah] WITH GRANT OPTION;
-GRANT CREATE LOGIN TO [SuperAdminRole];
+-- Create Logins and Users
+-- Create login and user for a student
+CREATE LOGIN StudentLogin1 WITH PASSWORD = 'SecurePassword123!';
+CREATE USER StudentUser1 FOR LOGIN StudentLogin1;
+ALTER ROLE Student ADD MEMBER StudentUser1;
+GO
+
+-- Create login and user for an SuperAdmin
+CREATE LOGIN AdminLogin1 WITH PASSWORD = 'AdminSecurePass!';
+CREATE USER AdminUser1 FOR LOGIN AdminLogin1;
+ALTER ROLE SuperAdmin ADD MEMBER AdminUser1;
+GO
+
+CREATE LOGIN TestAdmin WITH PASSWORD = 'TestAdmin123!';
+CREATE USER TestUser FOR LOGIN TestAdmin;
+ALTER ROLE SuperAdmin ADD MEMBER TestUser;
+GO
+------------------------------------------------------------------------------------------
+-- Stored Procedure for Enrolling Students
+CREATE PROCEDURE EnrollStudent
+    @StudentName NVARCHAR(255),
+    @StudentUsername NVARCHAR(255),
+    @StudentPassword NVARCHAR(255),
+    @DegreeProgram NVARCHAR(255),
+    @Courses NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+
+    BEGIN TRY
+        -- Create login for the student
+        DECLARE @Login NVARCHAR(255) = @StudentUsername;
+        EXEC sp_executesql N'CREATE LOGIN [' + @Login + '] WITH PASSWORD = @Password', N'@Password NVARCHAR(255)', @Password = @StudentPassword;
+
+        -- Create user for the login
+        EXEC sp_executesql N'CREATE USER [' + @StudentUsername + '] FOR LOGIN [' + @Login + ']';
+        EXEC sp_executesql N'ALTER ROLE Student ADD MEMBER [' + @StudentUsername + ']';
+
+        -- Add student to the Student table
+        DECLARE @StudentID INT;
+        INSERT INTO Student (StudentName, Username, Deg_Prog)
+        VALUES (@StudentName, @StudentUsername, @DegreeProgram);
+        SELECT @StudentID = SCOPE_IDENTITY();
+
+        -- Add courses to the Student_Course table
+        DECLARE @CourseID INT;
+        DECLARE @XMLCourses XML = CAST(@Courses AS XML);
+        DECLARE CourseCursor CURSOR FOR
+            SELECT T.C.value('.', 'INT') AS CourseID
+            FROM @XMLCourses.nodes('/Courses/CourseID') AS T(C);
+
+        OPEN CourseCursor;
+        FETCH NEXT FROM CourseCursor INTO @CourseID;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            INSERT INTO Student_Course (StudentID, Course_id)
+            VALUES (@StudentID, @CourseID);
+
+            FETCH NEXT FROM CourseCursor INTO @CourseID;
+        END;
+
+        CLOSE CourseCursor;
+        DEALLOCATE CourseCursor;
+
+        COMMIT;
+        PRINT 'Student enrolled successfully';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK;
+        THROW;
+    END CATCH;
+END;
+GO
+
+
+CREATE PROCEDURE EnrollStudentWithElevatedPrivileges
+    @StudentName NVARCHAR(255),
+    @StudentUsername NVARCHAR(255),
+    @StudentPassword NVARCHAR(255),
+    @DegreeProgram NVARCHAR(255),
+    @Courses NVARCHAR(MAX)
+WITH EXECUTE AS OWNER
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+
+    BEGIN TRY
+        -- Create login for the student
+        DECLARE @Login NVARCHAR(255) = @StudentUsername;
+        EXEC sp_executesql N'CREATE LOGIN ' + @Login + ' WITH PASSWORD = @Password', N'@Password NVARCHAR(255)', @Password = @StudentPassword;
+
+        -- Create user for the login
+        EXEC sp_executesql N'CREATE USER ' + @StudentUsername + ' FOR LOGIN ' + @Login;
+        EXEC sp_executesql N'ALTER ROLE Student ADD MEMBER ' + @StudentUsername;
+
+        -- Add student to the Student table
+        DECLARE @StudentID INT;
+        INSERT INTO Student (StudentName, Username, Deg_Prog)
+        VALUES (@StudentName, @StudentUsername, @DegreeProgram);
+        SELECT @StudentID = SCOPE_IDENTITY();
+
+        -- Add courses to the Student_Course table
+        DECLARE @CourseID INT;
+        DECLARE @XMLCourses XML = CAST(@Courses AS XML);
+        DECLARE CourseCursor CURSOR FOR
+            SELECT T.C.value('.', 'INT') AS CourseID
+            FROM @XMLCourses.nodes('/Courses/CourseID') AS T(C);
+
+        OPEN CourseCursor;
+        FETCH NEXT FROM CourseCursor INTO @CourseID;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            INSERT INTO Student_Course (StudentID, Course_id)
+            VALUES (@StudentID, @CourseID);
+
+            FETCH NEXT FROM CourseCursor INTO @CourseID;
+        END;
+
+        CLOSE CourseCursor;
+        DEALLOCATE CourseCursor;
+
+        COMMIT;
+        PRINT 'Student enrolled successfully';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK;
+        THROW;
+    END CATCH;
+END;
+GO
+
+DECLARE @Courses NVARCHAR(MAX) = '<Courses><CourseID>5</CourseID><CourseID>4</CourseID></Courses>';
+
+EXEC EnrollStudent
+    @StudentName = 'Faizan',
+    @StudentUsername = 'FA22-BCE-086',
+    @StudentPassword = 'Rfvg123!',
+    @DegreeProgram = 'BCE',
+    @Courses = @Courses;
+
+-- delete procedere 
+DROP PROCEDURE EnrollStudent;
