@@ -76,7 +76,10 @@ const EnrollStudent = () => {
           <input
             type="text"
             value={studentName}
-            onChange={(e) => setStudentName(e.target.value)}
+            onChange={(e) => {
+              setStudentName(e.target.value);
+              console.log(e.target.value);
+            }}
             className="w-full p-2 border text-black border-gray-300 rounded"
             required
           />
@@ -86,7 +89,10 @@ const EnrollStudent = () => {
           <input
             type="text"
             value={studentUsername}
-            onChange={(e) => setStudentUsername(e.target.value)}
+            onChange={(e) => {
+              setStudentUsername(e.target.value);
+              console.log(e.target.value);
+            }}
             className="w-full p-2 border text-black border-gray-300 rounded"
             required
           />
@@ -96,7 +102,10 @@ const EnrollStudent = () => {
           <input
             type="password"
             value={studentPassword}
-            onChange={(e) => setStudentPassword(e.target.value)}
+            onChange={(e) => {
+              setStudentPassword(e.target.value);
+              console.log(e.target.value);
+            }}
             className="w-full p-2 border text-black border-gray-300 rounded"
             required
           />
@@ -106,7 +115,10 @@ const EnrollStudent = () => {
           <input
             type="password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              console.log(e.target.value);
+            }}
             className="w-full p-2 border text-black border-gray-300 rounded"
             required
           />

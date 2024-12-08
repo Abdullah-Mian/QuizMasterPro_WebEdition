@@ -2,6 +2,7 @@ CREATE DATABASE quizmasterpro;
 GO
 Use quizmasterpro;
 
+
 -- Table for Degree Program
 CREATE TABLE Deg_Program
 (
@@ -155,6 +156,14 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON Option_Bank TO SuperAdmin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Answer_Key TO SuperAdmin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON Admins TO SuperAdmin;
 
+-- Grant permissions to Admin role
+GRANT EXECUTE ON OBJECT::dbo.EnrollStudent TO SuperAdmin;
+GRANT CREATE LOGIN TO SuperAdmin;
+GRANT ALTER ANY LOGIN TO SuperAdmin;
+GRANT CREATE USER TO SuperAdmin;
+GRANT ALTER ANY USER TO SuperAdmin;
+GRANT ALTER ANY ROLE TO SuperAdmin;
+
 -- Create login and user for a student
 CREATE LOGIN StudentLogin1 WITH PASSWORD = 'SecurePassword123!';
 CREATE USER StudentUser1 FOR LOGIN StudentLogin1;
@@ -173,7 +182,8 @@ INSERT INTO Admins
     (AdminName, Username, AdminRole)
 VALUES
     ('Admin1', 'AdminLogin1', 'admin');
-select * from Admins;
+select *
+from Admins;
 INSERT INTO Student
     (StudentName, Username, Deg_Prog)
 VALUES
@@ -190,7 +200,8 @@ VALUES
     ('BSIT', 'Bachelor of Science in Information Technology'),
     ('BBA', 'Bachelor of Business Administration');
 
-INSERT INTO Course (Course_Code, Course_Name, Deg_Prog)
+INSERT INTO Course
+    (Course_Code, Course_Name, Deg_Prog)
 VALUES
     -- Courses for BSCS
     ('CS101', 'Introduction to Programming', 'BSCS'),
@@ -228,122 +239,105 @@ VALUES
     ('BA103', 'Marketing Fundamentals', 'BBA');
 
 
-SELECT * FROM Course;
+SELECT *
+FROM Course;
 -----------------------------------------------------------------------------------------
-CREATE PROCEDURE CreateUserAndAssignRole
-    @Username NVARCHAR(255),
-    @Password NVARCHAR(50),
-    @Role NVARCHAR(50)
-AS
-BEGIN
-    BEGIN TRANSACTION;
 
-    BEGIN TRY
-        -- Create a login
-        DECLARE @Login NVARCHAR(255) = CONCAT(@Username, '_Login');
-        EXEC ('CREATE LOGIN ' + @Login + ' WITH PASSWORD = ''' + @Password + ''';');
+--CREATE PROCEDURE EnrollStudent
+--    @StudentName NVARCHAR(255),
+--    @StudentUsername NVARCHAR(255),
+--    @StudentPassword NVARCHAR(255),
+--    @DegreeProgram NVARCHAR(255),
+--    @Courses NVARCHAR(MAX)
+--AS
+--BEGIN
+--    SET NOCOUNT ON;
+--    BEGIN TRANSACTION;
 
-        -- Create a user for the login
-        EXEC ('CREATE USER ' + @Username + ' FOR LOGIN ' + @Login + ';');
+--  BEGIN TRY
+        -- Create login for the student
+--        DECLARE @Login NVARCHAR(255) = @StudentUsername;
+--        DECLARE @CreateLogin NVARCHAR(MAX);
+--        SET @CreateLogin = 'CREATE LOGIN [' + @Login + '] WITH PASSWORD = ''' + @StudentPassword + '''';
+--        EXEC sp_executesql @CreateLogin;
 
-        -- Assign role to the user
-        IF @Role = 'Student'
-            EXEC ('ALTER ROLE Student ADD MEMBER ' + @Username + ';');
-        ELSE IF @Role = 'Admin'
-            EXEC ('ALTER ROLE Admin ADD MEMBER ' + @Username + ';');
-        ELSE
-            THROW 50000, 'Invalid Role. Must be Student or Admin.', 1;
+        -- Create user for the login
+--        DECLARE @CreateUser NVARCHAR(MAX);
+--        SET @CreateUser = 'CREATE USER [' + @StudentUsername + '] FOR LOGIN [' + @Login + ']';
+--        EXEC sp_executesql @CreateUser;
 
-        COMMIT;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK;
-        THROW;
-    END CATCH;
-END;
+        -- Add the user to the Student role
+--        DECLARE @AddToRole NVARCHAR(MAX);
+--        SET @AddToRole = 'ALTER ROLE [Student] ADD MEMBER [' + @StudentUsername + ']';
+--        EXEC sp_executesql @AddToRole;
 
+        -- Add student to the Student table
+--        DECLARE @StudentID INT;
+--        INSERT INTO Student
+--        (StudentName, Username, Deg_Prog)
+--    VALUES
+--        (@StudentName, @StudentUsername, @DegreeProgram);
+--        SELECT @StudentID = SCOPE_IDENTITY();
 
-CREATE PROCEDURE AttemptQuiz
-    @Quiz_SessionID INT,
-    @QuestionID INT,
-    @Student_Answer NVARCHAR(255)
-AS
-BEGIN
-    BEGIN TRANSACTION;
+        -- Add courses to the Student_Course table
+--        DECLARE @CourseID INT;
+--        DECLARE @XMLCourses XML = CAST(@Courses AS XML);
+--        DECLARE CourseCursor CURSOR FOR
+--            SELECT T.C.value('.', 'INT') AS CourseID
+--    FROM @XMLCourses.nodes('/Courses/CourseID') AS T(C);
 
-    BEGIN TRY
-        -- Fetch the correct answer
-        DECLARE @CorrectAnswer NVARCHAR(255);
-        SELECT @CorrectAnswer = Option_String
-    FROM Option_Bank
-    WHERE OptionID = (SELECT CorrectOptionID
-    FROM Answer_Key
-    WHERE QuestionID = @QuestionID);
+--        OPEN CourseCursor;
+--        FETCH NEXT FROM CourseCursor INTO @CourseID;
 
-        -- Determine if the answer is correct
-        DECLARE @Is_Correct BIT = CASE WHEN @CorrectAnswer = @Student_Answer THEN 1 ELSE 0 END;
+--        WHILE @@FETCH_STATUS = 0
+--        BEGIN
+--        INSERT INTO Student_Course
+--            (StudentID, Course_id)
+--        VALUES
+--            (@StudentID, @CourseID);
 
-        -- Insert into Attempted_Quiz
-        INSERT INTO Attempted_Quiz
-        (Quiz_SessionID, Question_String, Actual_Answer, Student_Answer, Is_Correct)
-    VALUES
-        (@Quiz_SessionID, (SELECT Question_String
-            FROM Question_Bank
-            WHERE QuestionID = @QuestionID),
-            @CorrectAnswer, @Student_Answer, @Is_Correct);
+--        FETCH NEXT FROM CourseCursor INTO @CourseID;
+--    END;
 
-        -- Update progress or scores (example)
-        UPDATE Quiz_Session
-        SET Obtained_Marks = Obtained_Marks + CASE WHEN @Is_Correct = 1 THEN 1 ELSE 0 END,
-            Progress_Percentage = Progress_Percentage + 10 -- Example progress increment
-        WHERE Quiz_SessionID = @Quiz_SessionID;
+--        CLOSE CourseCursor;
+--        DEALLOCATE CourseCursor;
 
-        COMMIT;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK;
-        THROW;
-    END CATCH;
-END;
+--        COMMIT;
+--        PRINT 'Student enrolled successfully';
+--    END TRY
+--    BEGIN CATCH
+--        ROLLBACK;
+--        PRINT ERROR_MESSAGE();
+--        THROW;
+--    END CATCH;
+--END;
 
+------------------------------------------------------------
+USE master;
+GO
 
-================================
-SELECT Deg_Prog_Name
-FROM Deg_Program
-WHERE Deg_Prog = (SELECT Deg_Prog
-FROM Student
-WHERE StudentID = @StudentID);
-SELECT Course_Name
-FROM Course
-WHERE Deg_Prog = (SELECT Deg_Prog
-FROM Student
-WHERE StudentID = @StudentID);
+CREATE LOGIN SuperAdmin WITH PASSWORD = 'YourSecurePassword';
 
---------------------------------
-SELECT TOP (@NumberOfQuestions)
-    *
-FROM Question_Bank
-WHERE Course_Code = @CourseCode
-ORDER BY NEWID();
--- Randomize questions
+CREATE SERVER ROLE [SuperAdminRole];
 
-----------------------------------------
-CREATE PROCEDURE EnrollStudentInCourse
-    @StudentID INT,
-    @CourseID INT
-AS
-BEGIN
-    INSERT INTO Student_Course
-        (StudentID, Course_id)
-    VALUES
-        (@StudentID, @CourseID);
-END;
+GRANT CREATE LOGIN TO [SuperAdminRole];
+GRANT ALTER ANY LOGIN TO [SuperAdminRole];
 
-DENY SELECT, INSERT, UPDATE, DELETE ON Attempted_Quiz TO PUBLIC;
-GRANT EXECUTE ON OBJECT::dbo.AttemptQuiz TO Student;
+--SELECT 
+--    dp.name AS PrincipalName,
+--    dp.type_desc AS PrincipalType,
+--    p.permission_name,
+--    p.state_desc AS PermissionState
+--FROM 
+--    sys.server_permissions p
+--JOIN 
+--    sys.server_principals dp ON p.grantee_principal_id = dp.principal_id
+--WHERE 
+--    p.permission_name = 'CREATE LOGIN' AND dp.name = 'abdullah';
 
-CREATE VIEW StudentProgressView
-AS
-    SELECT s.StudentID, s.StudentName, qs.Course_id, qs.Quiz_TotalScore, qs.Obtained_Marks, qs.Progress_Percentage
-    FROM Student s
-        JOIN Quiz_Session qs ON s.StudentID = qs.StudentID;
+GRANT CREATE LOGIN TO [abdullah];
+
+GRANT CREATE LOGIN TO [SuperAdminRole];
+GRANT ALTER ANY LOGIN TO [SuperAdminRole];
+GRANT CREATE LOGIN TO [abdullah] WITH GRANT OPTION;
+GRANT CREATE LOGIN TO [SuperAdminRole];

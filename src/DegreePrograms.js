@@ -37,41 +37,13 @@ const DegreePrograms = () => {
     }
   }, [username, password, degreePrograms, setDegreePrograms]);
 
-  const fetchCourses = async (degProg) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/courses?degProg=${degProg}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "x-username": username,
-            "x-password": password,
-          },
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setCourses((prevCourses) => ({
-          ...prevCourses,
-          [degProg]: data,
-        }));
-        console.log("Courses in context: ", courses);
-      } else {
-        console.error("Failed to fetch courses:", data.error);
-      }
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
-  };
-
   const handleToggle = (degProg) => {
     if (expanded === degProg) {
       setExpanded(null);
     } else {
       setExpanded(degProg);
       if (!courses[degProg]) {
-        fetchCourses(degProg);
+        console.log("course not found");
       }
     }
   };

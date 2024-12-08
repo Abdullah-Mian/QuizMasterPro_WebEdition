@@ -122,10 +122,9 @@ app.get("/userverification", authenticate, async (req, res) => {
   }
 });
 
-// Endpoint for fetching courses by degree program
+// Endpoint for fetching all courses
 app.get("/courses", authenticate, async (req, res) => {
   console.log("Courses endpoint reached");
-  const degProg = req.query.degProg;
   try {
     const pool = await sql.connect({
       user: req.headers["x-username"],
@@ -139,9 +138,7 @@ app.get("/courses", authenticate, async (req, res) => {
         enableArithAbort: true,
       },
     });
-    const result = await pool
-      .request()
-      .query(`SELECT * FROM Course WHERE Deg_Prog = '${degProg}'`);
+    const result = await pool.request().query("SELECT * FROM Course");
     console.log("Query executed successfully");
     res.json(result.recordset);
   } catch (err) {
@@ -253,29 +250,20 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
       },
     });
 
-    // Create login for the student
-    await pool.request().query(`
-      CREATE LOGIN ${studentUsername} WITH PASSWORD = '${studentPassword}';
-      CREATE USER ${studentUsername} FOR LOGIN ${studentUsername};
-      ALTER ROLE Student ADD MEMBER ${studentUsername};
-    `);
+    // Convert courses array to XML format
+    const coursesXML = `<Courses>${courses
+      .map((courseId) => `<CourseID>${courseId}</CourseID>`)
+      .join("")}</Courses>`;
 
-    // Add student to the Student table
-    const result = await pool.request().query(`
-      INSERT INTO Student (StudentName, Username, Deg_Prog)
-      VALUES ('${studentName}', '${studentUsername}', '${degreeProgram}');
-      SELECT SCOPE_IDENTITY() AS StudentID;
-    `);
-
-    const studentID = result.recordset[0].StudentID;
-
-    // Add courses to the Student_Course table
-    for (const courseId of courses) {
-      await pool.request().query(`
-        INSERT INTO Student_Course (StudentID, Course_id)
-        VALUES (${studentID}, ${courseId});
-      `);
-    }
+    // Call the stored procedure
+    await pool
+      .request()
+      .input("StudentName", sql.NVarChar, studentName)
+      .input("StudentUsername", sql.NVarChar, studentUsername)
+      .input("StudentPassword", sql.NVarChar, studentPassword)
+      .input("DegreeProgram", sql.NVarChar, degreeProgram)
+      .input("Courses", sql.NVarChar, coursesXML)
+      .execute("EnrollStudent");
 
     console.log("Student enrolled successfully");
     res.json({ message: "Student enrolled successfully" });

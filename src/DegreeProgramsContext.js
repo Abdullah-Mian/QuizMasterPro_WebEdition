@@ -12,31 +12,11 @@ export const DegreeProgramsContext = createContext({
 export const DegreeProgramsProvider = ({ children }) => {
   const [degreePrograms, setDegreePrograms] = useState([]);
   const [courses, setCourses] = useState({});
-  const { username, password } = useContext(AuthContext);
+  const { username, password, verified } = useContext(AuthContext);
 
   useEffect(() => {
-    const fetchDegreePrograms = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/degreeprograms", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "x-username": username,
-            "x-password": password,
-          },
-        });
-        const data = await response.json();
-        if (response.ok) {
-          setDegreePrograms(data);
-        } else {
-          console.error("Failed to fetch degree programs:", data.error);
-        }
-      } catch (error) {
-        console.error("Error fetching degree programs:", error);
-      }
-    };
-
     const fetchCourses = async () => {
+      console.log("fetching courses");
       try {
         const response = await fetch("http://localhost:3000/courses", {
           method: "GET",
@@ -64,9 +44,33 @@ export const DegreeProgramsProvider = ({ children }) => {
       }
     };
 
-    fetchDegreePrograms();
-    fetchCourses();
-  }, [username, password]);
+    const fetchDegreePrograms = async () => {
+      console.log("fetching degree programs");
+      try {
+        const response = await fetch("http://localhost:3000/degreeprograms", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-username": username,
+            "x-password": password,
+          },
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setDegreePrograms(data);
+        } else {
+          console.error("Failed to fetch degree programs:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching degree programs:", error);
+      }
+    };
+
+    if (verified) {
+      fetchDegreePrograms();
+      fetchCourses();
+    }
+  }, [username, password, verified]);
 
   return (
     <DegreeProgramsContext.Provider
