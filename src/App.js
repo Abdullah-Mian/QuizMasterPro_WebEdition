@@ -1,12 +1,12 @@
 import React, { useEffect, useContext, useState } from "react";
 import "./App.css";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Login from "./Login";
+import Login from "./components/./Login";
 import Home from "./Home";
-import Navigation from "./Navigation";
-import { AuthContext } from "./AuthContext";
+import Navigation from "./components/./Navigation";
+import { AuthContext } from "./components/AuthContext";
 import StudentDashboard from "./StudentDashboard";
-import AdminDashboard from "./AdminDashboard";
+import AdminDashboard from "./components/AdminDashboard";
 
 function App() {
   const {

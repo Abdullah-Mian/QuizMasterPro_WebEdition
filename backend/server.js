@@ -283,6 +283,37 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
   }
 });
 
+// Endpoint for fetching courses associated with a specific student
+app.get("/studentcourses", authenticate, async (req, res) => {
+  console.log("Student courses endpoint reached");
+  const studentId = req.query.studentId;
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    const result = await pool.request()
+      .query(`SELECT Course.Course_Code, Course.Course_Name FROM Course
+              INNER JOIN Student_Course ON Course.Course_id = Student_Course.Course_id
+              WHERE Student_Course.StudentID = ${studentId}`);
+    console.log("Query executed successfully");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Backend server is running on http://localhost:${port}`);
 });

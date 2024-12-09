@@ -61,6 +61,13 @@ CREATE TABLE Student_Course
     FOREIGN KEY (Course_id) REFERENCES Course(Course_id) ON DELETE CASCADE
     -- Cascade deletion if a course is removed
 );
+
+-- Populate Student_Course table
+INSERT INTO Student_Course (StudentID, Course_id)
+SELECT s.StudentID, c.Course_id
+FROM Student s
+JOIN Course c ON s.Deg_Prog = c.Deg_Prog;
+GO
 GO
 
 -- Table for Question Bank
@@ -222,11 +229,13 @@ CREATE ROLE SuperAdmin;
 GO
 
 -- Grant permissions to Student role
+-- Grant permissions to Student role
 GRANT SELECT ON Deg_Program TO Student;
 GRANT SELECT ON Course TO Student;
 GRANT SELECT ON Question_Bank TO Student;
 GRANT SELECT, INSERT, UPDATE ON Attempted_Quiz TO Student;
 GRANT SELECT ON Student TO Student;
+GRANT SELECT ON Student_Course TO Student;
 GO
 
 -- Grant permissions to SuperAdmin role
@@ -241,6 +250,8 @@ GRANT EXECUTE ON OBJECT::dbo.EnrollStudent TO SuperAdmin;
 GRANT CREATE USER TO SuperAdmin;
 GRANT ALTER ANY USER TO SuperAdmin;
 GRANT ALTER ANY ROLE TO SuperAdmin;
+
+GRANT CREATE LOGIN TO SuperAdminRole;
 GO
 
 -- Create Logins and Users
@@ -260,6 +271,11 @@ CREATE LOGIN TestAdmin WITH PASSWORD = 'TestAdmin123!';
 CREATE USER TestUser FOR LOGIN TestAdmin;
 ALTER ROLE SuperAdmin ADD MEMBER TestUser;
 GO
+------------------------------------------------------------------------------------------
+-- Query to Fetch Courses for one student
+SELECT Course.Course_Code, Course.Course_Name FROM Course
+              INNER JOIN Student_Course ON Course.Course_id = Student_Course.Course_id
+              WHERE Student_Course.StudentID = '1'
 ------------------------------------------------------------------------------------------
 -- Stored Procedure for Enrolling Students
 CREATE PROCEDURE EnrollStudent
@@ -388,4 +404,4 @@ EXEC EnrollStudent
     @Courses = @Courses;
 
 -- delete procedere 
-DROP PROCEDURE EnrollStudent;
+DROP PROCEDURE EnrollStudentWithElevatedPrivileges;
