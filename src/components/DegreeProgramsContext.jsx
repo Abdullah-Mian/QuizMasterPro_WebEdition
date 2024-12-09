@@ -5,14 +5,20 @@ import { AuthContext } from "./AuthContext";
 export const DegreeProgramsContext = createContext({
   degreePrograms: [],
   setDegreePrograms: () => {},
-  courses: {},
+  courses: [],
   setCourses: () => {},
+  loading: false,
+  setLoading: () => {},
+  error: null,
+  setError: () => {},
 });
 
 export const DegreeProgramsProvider = ({ children }) => {
   const [degreePrograms, setDegreePrograms] = useState([]);
-  const [courses, setCourses] = useState({});
+  const [courses, setCourses] = useState([]);
   const { username, password, verified } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -67,8 +73,8 @@ export const DegreeProgramsProvider = ({ children }) => {
     };
 
     if (verified) {
-      fetchDegreePrograms();
-      fetchCourses();
+      // fetchDegreePrograms();
+      // fetchCourses();
     }
   }, [username, password, verified]);
 
@@ -79,6 +85,10 @@ export const DegreeProgramsProvider = ({ children }) => {
         setDegreePrograms,
         courses,
         setCourses,
+        loading,
+        setLoading,
+        error,
+        setError,
       }}
     >
       {children}

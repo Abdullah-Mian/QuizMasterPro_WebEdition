@@ -1,12 +1,17 @@
+// src/App.js
 import React, { useEffect, useContext, useState } from "react";
 import "./App.css";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Login from "./components/./Login";
+import Login from "./components/Login";
 import Home from "./Home";
-import Navigation from "./components/./Navigation";
+import Navigation from "./components/Navigation";
 import { AuthContext } from "./components/AuthContext";
+import { DegreeProgramsProvider } from "./components/DegreeProgramsContext";
+import { ProgressProvider } from "./ProgressContext";
 import StudentDashboard from "./StudentDashboard";
 import AdminDashboard from "./components/AdminDashboard";
+import Progress from "./Progress";
+import Analytics from "./Analytics";
 
 function App() {
   const {
@@ -28,7 +33,7 @@ function App() {
       if (!username || !password || !loginType) return;
       setLoading(true);
       setError(null);
-      console.log("fetching data from app.js");
+
       try {
         const response = await fetch(`http://localhost:3000/userverification`, {
           method: "GET",
@@ -109,6 +114,26 @@ function App() {
           element={
             verified && loginType === "student" ? (
               <StudentDashboard />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            verified && loginType === "student" ? (
+              <Progress />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            verified && loginType === "student" ? (
+              <Analytics />
             ) : (
               <Navigate to="/login" />
             )

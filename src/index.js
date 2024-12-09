@@ -5,15 +5,18 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./components/AuthContext";
 import { DegreeProgramsProvider } from "./components/DegreeProgramsContext";
+import { ProgressProvider } from "./ProgressContext";
 import { BrowserRouter as Router } from "react-router-dom";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <AuthProvider>
       <DegreeProgramsProvider>
-        <Router>
-          <App />
-        </Router>
+        <ProgressProvider>
+          <Router>
+            <App />
+          </Router>
+        </ProgressProvider>
       </DegreeProgramsProvider>
     </AuthProvider>
   </React.StrictMode>

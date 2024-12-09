@@ -282,7 +282,6 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
     res.status(500).json({ error: "SQL error" });
   }
 });
-
 // Endpoint for fetching courses associated with a specific student
 app.get("/studentcourses", authenticate, async (req, res) => {
   console.log("Student courses endpoint reached");
@@ -303,9 +302,79 @@ app.get("/studentcourses", authenticate, async (req, res) => {
     });
 
     const result = await pool.request()
-      .query(`SELECT Course.Course_Code, Course.Course_Name FROM Course
+      .query(`SELECT Course.Course_id, Course.Course_Code, Course.Course_Name, 
+              (SELECT COUNT(*) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes,
+              (SELECT AVG(Progress_Percentage) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS Progress_Percentage
+              FROM Course
               INNER JOIN Student_Course ON Course.Course_id = Student_Course.Course_id
               WHERE Student_Course.StudentID = ${studentId}`);
+    console.log("Query executed successfully");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
+// Endpoint for fetching course details
+app.get("/coursedetails", authenticate, async (req, res) => {
+  console.log("Course details endpoint reached");
+  const studentId = req.query.studentId;
+  const courseId = req.query.courseId;
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    const result = await pool.request()
+      .query(`SELECT Course.Course_Code, Course.Course_Name, 
+              (SELECT COUNT(*) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes,
+              (SELECT Quiz_SessionID, Obtained_Marks, Quiz_TotalScore FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes
+              FROM Course
+              WHERE Course.Course_id = ${courseId}`);
+    console.log("Query executed successfully");
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
+// Endpoint for fetching progress data
+app.get("/progress", authenticate, async (req, res) => {
+  console.log("Progress endpoint reached");
+  const studentId = req.query.studentId;
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    const result = await pool.request()
+      .query(`SELECT Course.Course_Name, AVG(Quiz_Session.Progress_Percentage) AS Progress_Percentage
+              FROM Quiz_Session
+              INNER JOIN Course ON Quiz_Session.Course_id = Course.Course_id
+              WHERE Quiz_Session.StudentID = ${studentId}
+              GROUP BY Course.Course_Name`);
     console.log("Query executed successfully");
     res.json(result.recordset);
   } catch (err) {
