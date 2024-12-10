@@ -237,13 +237,8 @@ app.get("/students", authenticate, async (req, res) => {
 // Endpoint for enrolling students
 app.post("/enrollstudent", authenticate, async (req, res) => {
   console.log("Enroll student endpoint reached");
-  const {
-    studentName,
-    studentUsername,
-    studentPassword,
-    degreeProgram,
-    courses,
-  } = req.body;
+  const { studentName, studentUsername, studentPassword, degreeProgram, courses } = req.body;
+
   try {
     const pool = await sql.connect({
       user: DB_USER,
@@ -252,36 +247,37 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
       database: "quizmasterpro",
       options: {
         encrypt: true,
-        trustServerCertificate: true,
-        connectionTimeout: 30000,
-        enableArithAbort: true,
-      },
+        trustServerCertificate: true
+      }
     });
-    if (pool) {
-      console.log("Connected to the database using master user's credentials");
-    }
-    // Convert courses array to XML format
+
     const coursesXML = `<Courses>${courses
-      .map((courseId) => `<CourseID>${courseId}</CourseID>`)
+      .map(courseId => `<CourseID>${courseId}</CourseID>`)
       .join("")}</Courses>`;
 
-    // Call the stored procedure
-    await pool
-      .request()
-      .input("StudentName", sql.NVarChar, studentName)
-      .input("StudentUsername", sql.NVarChar, studentUsername)
-      .input("StudentPassword", sql.NVarChar, studentPassword)
-      .input("DegreeProgram", sql.NVarChar, degreeProgram)
-      .input("Courses", sql.NVarChar, coursesXML)
-      .execute("EnrollStudent");
+    const result = await pool.request()
+      .input('StudentName', sql.NVarChar, studentName)
+      .input('StudentUsername', sql.NVarChar, studentUsername)
+      .input('StudentPassword', sql.NVarChar, studentPassword)
+      .input('DegreeProgram', sql.NVarChar, degreeProgram)
+      .input('Courses', sql.NVarChar, coursesXML)
+      .execute('EnrollNewStudent');
 
-    console.log("Student enrolled successfully");
-    res.json({ message: "Student enrolled successfully" });
+    if (result.recordset[0].Result === 'Success') {
+      res.json({ message: "Student enrolled successfully" });
+    } else {
+      throw new Error("Enrollment failed");
+    }
+
   } catch (err) {
-    console.error("SQL error:", err);
-    res.status(500).json({ error: "SQL error" });
+    console.error("Enrollment error:", err);
+    res.status(500).json({ 
+      error: "Failed to enroll student",
+      details: err.message 
+    });
   }
 });
+
 // Endpoint for fetching courses associated with a specific student
 app.get("/studentcourses", authenticate, async (req, res) => {
   console.log("Student courses endpoint reached");
