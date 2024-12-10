@@ -12,6 +12,7 @@ import StudentDashboard from "./StudentDashboard";
 import AdminDashboard from "./components/AdminDashboard";
 import Progress from "./Progress";
 import Analytics from "./Analytics";
+import CourseDetails from "./CourseDetails";
 
 function App() {
   const {
@@ -114,6 +115,16 @@ function App() {
           element={
             verified && loginType === "student" ? (
               <StudentDashboard />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/student/course/:courseId"
+          element={
+            verified && loginType === "student" ? (
+              <CourseDetails />
             ) : (
               <Navigate to="/login" />
             )

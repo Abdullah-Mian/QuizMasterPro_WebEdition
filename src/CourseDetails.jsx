@@ -42,7 +42,7 @@ const CourseDetails = () => {
 
     fetchCourseDetails();
   }, [username, password, userData, courseId]);
-
+  console.log("Course Details:", courseDetails);
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Course Details</h2>
@@ -50,8 +50,9 @@ const CourseDetails = () => {
       {error && <p>Error: {error}</p>}
       {courseDetails && (
         <div>
-          <h3 className="text-xl font-bold">{courseDetails.Course_Name}</h3>
-          <p>Course Code: {courseDetails.Course_Code}</p>
+          <h3 className="text-xl font-bold">
+            {courseDetails.Course_Name} {courseDetails.Course_Code}
+          </h3>
           <h4 className="text-lg font-bold mt-4">Attempted Quizzes</h4>
           <div className="space-y-2">
             {Array.isArray(courseDetails.AttemptedQuizzes) &&

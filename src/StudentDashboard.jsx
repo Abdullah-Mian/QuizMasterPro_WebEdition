@@ -4,7 +4,6 @@ import { AuthContext } from "./components/AuthContext";
 import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
 import { Routes, Route } from "react-router-dom";
 import StudentCourses from "./StudentCourses";
-import CourseDetails from "./CourseDetails";
 import Progress from "./Progress";
 import Analytics from "./Analytics";
 
@@ -58,7 +57,6 @@ const StudentDashboard = () => {
       </h1>
       <Routes>
         <Route path="/" element={<StudentCourses />} />
-        <Route path="/course/:courseId" element={<CourseDetails />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/analytics" element={<Analytics />} />
       </Routes>
