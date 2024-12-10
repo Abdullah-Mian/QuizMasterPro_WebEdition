@@ -18,7 +18,7 @@ const StudentCourses = () => {
       {!loading && !error && Array.isArray(courses) && (
         <div className="space-y-4">
           {courses.map((course, index) => (
-            <Link to={`/course/${course.Course_id}`} key={index}>
+            <Link to={`/student/course/${course.Course_id}`} key={index}>
               <div className="border-t border-b border-gray-300 rounded-lg p-4 bg-gray-800 text-white mb-2">
                 <div className="flex justify-between items-center">
                   <span>

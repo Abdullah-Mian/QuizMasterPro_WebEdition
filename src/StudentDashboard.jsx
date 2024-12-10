@@ -50,6 +50,9 @@ const StudentDashboard = () => {
   return (
     <div className="dashboard p-4 ">
       <h2 className="text-2xl font-bold mb-4 text-center">Student Dashboard</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        {JSON.stringify(userData[0].Deg_Prog)}
+      </h2>
       <h1 className="text-xl font-bold ml-4">
         Welcome back {JSON.stringify(userData[0].StudentName)}
       </h1>

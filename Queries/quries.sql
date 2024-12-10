@@ -497,3 +497,9 @@ EXEC EnrollNewStudent
 select *  from student_course
 go 
 select * from student
+
+SELECT Course.Course_Code, Course.Course_Name, 
+              (SELECT COUNT(*) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = 1) AS AttemptedQuizzes,
+              (SELECT Quiz_SessionID, Obtained_Marks, Quiz_TotalScore FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = 1) AS AttemptedQuizzes
+              FROM Course
+              WHERE Course.Course_id = 1

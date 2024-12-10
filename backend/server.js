@@ -342,12 +342,21 @@ app.get("/coursedetails", authenticate, async (req, res) => {
       },
     });
 
-    const result = await pool.request()
-      .query(`SELECT Course.Course_Code, Course.Course_Name, 
-              (SELECT COUNT(*) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes,
-              (SELECT Quiz_SessionID, Obtained_Marks, Quiz_TotalScore FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes
-              FROM Course
-              WHERE Course.Course_id = ${courseId}`);
+    const result = await pool.request().query(`SELECT 
+    Course.Course_Code, 
+    Course.Course_Name, 
+    (SELECT COUNT(*) 
+     FROM Quiz_Session 
+     WHERE Quiz_Session.Course_id = Course.Course_id 
+       AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes,
+    (SELECT STRING_AGG(CONCAT(Quiz_SessionID, ',', Obtained_Marks, ',', Quiz_TotalScore), ';') 
+     FROM Quiz_Session 
+     WHERE Quiz_Session.Course_id = Course.Course_id 
+       AND Quiz_Session.StudentID = ${studentId}) AS QuizDetails
+      FROM 
+      Course
+      WHERE 
+    Course.Course_id = ${courseId}`);
     console.log("Query executed successfully");
     res.json(result.recordset[0]);
   } catch (err) {

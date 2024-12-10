@@ -3,7 +3,7 @@ import React, { useEffect, useContext, useState } from "react";
 import "./App.css";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./components/Login";
-import Home from "./Home";
+import Home from "./components/Home";
 import Navigation from "./components/Navigation";
 import { AuthContext } from "./components/AuthContext";
 import { DegreeProgramsProvider } from "./components/DegreeProgramsContext";

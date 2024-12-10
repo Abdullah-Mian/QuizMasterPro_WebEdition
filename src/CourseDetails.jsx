@@ -14,7 +14,7 @@ const CourseDetails = () => {
     const fetchCourseDetails = async () => {
       setLoading(true);
       setError(null);
-
+      console.log("courseId:", courseId);
       try {
         const response = await fetch(
           `http://localhost:3000/coursedetails?studentId=${userData[0].StudentID}&courseId=${courseId}`,
@@ -54,19 +54,20 @@ const CourseDetails = () => {
           <p>Course Code: {courseDetails.Course_Code}</p>
           <h4 className="text-lg font-bold mt-4">Attempted Quizzes</h4>
           <div className="space-y-2">
-            {courseDetails.AttemptedQuizzes.map((quiz, index) => (
-              <div
-                key={index}
-                className="border-t border-b border-gray-300 rounded-lg p-4 bg-gray-800 text-white"
-              >
-                <div className="flex justify-between items-center">
-                  <span>Quiz ID: {quiz.Quiz_SessionID}</span>
-                  <span>
-                    Score: {quiz.Obtained_Marks}/{quiz.Quiz_TotalScore}
-                  </span>
+            {Array.isArray(courseDetails.AttemptedQuizzes) &&
+              courseDetails.AttemptedQuizzes.map((quiz, index) => (
+                <div
+                  key={index}
+                  className="border-t border-b border-gray-300 rounded-lg p-4 bg-gray-800 text-white"
+                >
+                  <div className="flex justify-between items-center">
+                    <span>Quiz ID: {quiz.Quiz_SessionID}</span>
+                    <span>
+                      Score: {quiz.Obtained_Marks}/{quiz.Quiz_TotalScore}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       )}
