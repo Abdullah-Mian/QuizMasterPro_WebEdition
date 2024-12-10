@@ -90,7 +90,10 @@ app.get("/userverification", authenticate, async (req, res) => {
   console.log("User verification endpoint reached");
   const username = req.headers["x-username"];
   const loginType = req.headers["x-logintype"];
-
+  console.log("Attempting user verification...");
+  console.log("Login type:", loginType);
+  console.log("Username:", username);
+  console.log("Password:", req.headers["x-password"]);
   try {
     const pool = await sql.connect({
       user: req.headers["x-username"],
@@ -237,9 +240,16 @@ app.get("/students", authenticate, async (req, res) => {
 // Endpoint for enrolling students
 app.post("/enrollstudent", authenticate, async (req, res) => {
   console.log("Enroll student endpoint reached");
-  const { studentName, studentUsername, studentPassword, degreeProgram, courses } = req.body;
+  const {
+    studentName,
+    studentUsername,
+    studentPassword,
+    degreeProgram,
+    courses,
+  } = req.body;
 
   try {
+    console.log("executing try in enrollstudent");
     const pool = await sql.connect({
       user: DB_USER,
       password: DB_PASSWORD,
@@ -247,33 +257,33 @@ app.post("/enrollstudent", authenticate, async (req, res) => {
       database: "quizmasterpro",
       options: {
         encrypt: true,
-        trustServerCertificate: true
-      }
+        trustServerCertificate: true,
+      },
     });
 
     const coursesXML = `<Courses>${courses
-      .map(courseId => `<CourseID>${courseId}</CourseID>`)
+      .map((courseId) => `<CourseID>${courseId}</CourseID>`)
       .join("")}</Courses>`;
 
-    const result = await pool.request()
-      .input('StudentName', sql.NVarChar, studentName)
-      .input('StudentUsername', sql.NVarChar, studentUsername)
-      .input('StudentPassword', sql.NVarChar, studentPassword)
-      .input('DegreeProgram', sql.NVarChar, degreeProgram)
-      .input('Courses', sql.NVarChar, coursesXML)
-      .execute('EnrollNewStudent');
+    const result = await pool
+      .request()
+      .input("StudentName", sql.NVarChar, studentName)
+      .input("StudentUsername", sql.NVarChar, studentUsername)
+      .input("StudentPassword", sql.NVarChar, studentPassword)
+      .input("DegreeProgram", sql.NVarChar, degreeProgram)
+      .input("Courses", sql.NVarChar, coursesXML)
+      .execute("EnrollNewStudent");
 
-    if (result.recordset[0].Result === 'Success') {
+    if (result.recordset[0].Result === "Success") {
       res.json({ message: "Student enrolled successfully" });
     } else {
       throw new Error("Enrollment failed");
     }
-
   } catch (err) {
     console.error("Enrollment error:", err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Failed to enroll student",
-      details: err.message 
+      details: err.message,
     });
   }
 });

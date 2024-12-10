@@ -280,65 +280,65 @@ FROM Course
 WHERE Student_Course.StudentID = '1'
 ------------------------------------------------------------------------------------------
 -- Stored Procedure for Enrolling Students
-CREATE PROCEDURE EnrollStudent
-    @StudentName NVARCHAR(255),
-    @StudentUsername NVARCHAR(255),
-    @StudentPassword NVARCHAR(255),
-    @DegreeProgram NVARCHAR(255),
-    @Courses NVARCHAR(MAX)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRANSACTION;
+-- CREATE PROCEDURE EnrollStudent
+--     @StudentName NVARCHAR(255),
+--     @StudentUsername NVARCHAR(255),
+--     @StudentPassword NVARCHAR(255),
+--     @DegreeProgram NVARCHAR(255),
+--     @Courses NVARCHAR(MAX)
+-- AS
+-- BEGIN
+--     SET NOCOUNT ON;
+--     BEGIN TRANSACTION;
 
-    BEGIN TRY
-        -- Create login for the student
-        DECLARE @Login NVARCHAR(255) = @StudentUsername;
-        EXEC sp_executesql N'CREATE LOGIN [' + @Login + '] WITH PASSWORD = @Password', N'@Password NVARCHAR(255)', @Password = @StudentPassword;
+--     BEGIN TRY
+--         -- Create login for the student
+--         DECLARE @Login NVARCHAR(255) = @StudentUsername;
+--         EXEC sp_executesql N'CREATE LOGIN [' + @Login + '] WITH PASSWORD = @Password', N'@Password NVARCHAR(255)', @Password = @StudentPassword;
 
-        -- Create user for the login
-        EXEC sp_executesql N'CREATE USER [' + @StudentUsername + '] FOR LOGIN [' + @Login + ']';
-        EXEC sp_executesql N'ALTER ROLE Student ADD MEMBER [' + @StudentUsername + ']';
+--         -- Create user for the login
+--         EXEC sp_executesql N'CREATE USER [' + @StudentUsername + '] FOR LOGIN [' + @Login + ']';
+--         EXEC sp_executesql N'ALTER ROLE Student ADD MEMBER [' + @StudentUsername + ']';
 
-        -- Add student to the Student table
-        DECLARE @StudentID INT;
-        INSERT INTO Student
-        (StudentName, Username, Deg_Prog)
-    VALUES
-        (@StudentName, @StudentUsername, @DegreeProgram);
-        SELECT @StudentID = SCOPE_IDENTITY();
+--         -- Add student to the Student table
+--         DECLARE @StudentID INT;
+--         INSERT INTO Student
+--         (StudentName, Username, Deg_Prog)
+--     VALUES
+--         (@StudentName, @StudentUsername, @DegreeProgram);
+--         SELECT @StudentID = SCOPE_IDENTITY();
 
-        -- Add courses to the Student_Course table
-        DECLARE @CourseID INT;
-        DECLARE @XMLCourses XML = CAST(@Courses AS XML);
-        DECLARE CourseCursor CURSOR FOR
-            SELECT T.C.value('.', 'INT') AS CourseID
-    FROM @XMLCourses.nodes('/Courses/CourseID') AS T(C);
+--         -- Add courses to the Student_Course table
+--         DECLARE @CourseID INT;
+--         DECLARE @XMLCourses XML = CAST(@Courses AS XML);
+--         DECLARE CourseCursor CURSOR FOR
+--             SELECT T.C.value('.', 'INT') AS CourseID
+--     FROM @XMLCourses.nodes('/Courses/CourseID') AS T(C);
 
-        OPEN CourseCursor;
-        FETCH NEXT FROM CourseCursor INTO @CourseID;
+--         OPEN CourseCursor;
+--         FETCH NEXT FROM CourseCursor INTO @CourseID;
 
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-        INSERT INTO Student_Course
-            (StudentID, Course_id)
-        VALUES
-            (@StudentID, @CourseID);
+--         WHILE @@FETCH_STATUS = 0
+--         BEGIN
+--         INSERT INTO Student_Course
+--             (StudentID, Course_id)
+--         VALUES
+--             (@StudentID, @CourseID);
 
-        FETCH NEXT FROM CourseCursor INTO @CourseID;
-    END;
+--         FETCH NEXT FROM CourseCursor INTO @CourseID;
+--     END;
 
-        CLOSE CourseCursor;
-        DEALLOCATE CourseCursor;
+--         CLOSE CourseCursor;
+--         DEALLOCATE CourseCursor;
 
-        COMMIT;
-        PRINT 'Student enrolled successfully';
-    END TRY
-    BEGIN CATCH
-        ROLLBACK;
-        THROW;
-    END CATCH;
-END;
+--         COMMIT;
+--         PRINT 'Student enrolled successfully';
+--     END TRY
+--     BEGIN CATCH
+--         ROLLBACK;
+--         THROW;
+--     END CATCH;
+-- END;
 GO
 
 
@@ -493,3 +493,7 @@ EXEC EnrollNewStudent
     @StudentPassword = 'SecurePass123!',
     @DegreeProgram = 'BSCS',
     @Courses = @CoursesXML;
+
+select *  from student_course
+go 
+select * from student

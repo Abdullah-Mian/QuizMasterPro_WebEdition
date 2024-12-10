@@ -8,7 +8,7 @@ export const ProgressContext = createContext({
 });
 
 export const ProgressProvider = ({ children }) => {
-  const { username, password, userData } = useContext(AuthContext);
+  const { username, password, userData, loginType } = useContext(AuthContext);
   const [progressData, setProgressData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,8 +42,9 @@ export const ProgressProvider = ({ children }) => {
         setLoading(false);
       }
     };
-
-    fetchProgressData();
+    if (loginType === "student") {
+      fetchProgressData();
+    }
   }, [username, password, userData]);
 
   return (

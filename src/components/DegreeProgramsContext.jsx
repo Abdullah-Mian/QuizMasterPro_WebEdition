@@ -73,8 +73,8 @@ export const DegreeProgramsProvider = ({ children }) => {
     };
 
     if (verified) {
-      // fetchDegreePrograms();
-      // fetchCourses();
+      fetchDegreePrograms();
+      fetchCourses();
     }
   }, [username, password, verified]);
 
