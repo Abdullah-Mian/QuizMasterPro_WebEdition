@@ -419,6 +419,126 @@ app.get("/randomquizzes", authenticate, async (req, res) => {
   }
 });
 
+// Endpoint for inserting quiz session
+app.post("/insertquizsession", authenticate, async (req, res) => {
+  const {
+    studentId,
+    courseId,
+    startTime,
+    endTime,
+    totalMarks,
+    obtainedMarks,
+    progressPercentage,
+    scholasticStatus,
+  } = req.body;
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    const result = await pool
+      .request()
+      .input("StudentID", sql.Int, studentId)
+      .input("CourseID", sql.Int, courseId)
+      .input("StartTime", sql.DateTime, startTime)
+      .input("EndTime", sql.DateTime, endTime)
+      .input("TotalMarks", sql.Int, totalMarks)
+      .input("ObtainedMarks", sql.Int, obtainedMarks)
+      .input("ProgressPercentage", sql.Int, progressPercentage)
+      .input("ScholasticStatus", sql.NVarChar, scholasticStatus)
+      .execute("InsertQuizSession");
+
+    res.json({ quizSessionId: result.recordset[0].QuizSessionID });
+  } catch (err) {
+    console.error("Error inserting quiz session:", err);
+    res.status(500).json({ error: "Error inserting quiz session" });
+  }
+});
+
+// Endpoint for inserting attempted quiz
+app.post("/insertattemptedquiz", authenticate, async (req, res) => {
+  const { quizSessionId, questions, answers, correctAnswers } = req.body;
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    await pool
+      .request()
+      .input("QuizSessionID", sql.Int, quizSessionId)
+      .input("Questions", sql.NVarChar, JSON.stringify(questions))
+      .input("Answers", sql.NVarChar, JSON.stringify(answers))
+      .input("CorrectAnswers", sql.NVarChar, JSON.stringify(correctAnswers))
+      .execute("InsertAttemptedQuiz");
+
+    res.json({ message: "Attempted quiz inserted successfully" });
+  } catch (err) {
+    console.error("Error inserting attempted quiz:", err);
+    res.status(500).json({ error: "Error inserting attempted quiz" });
+  }
+});
+
+// Endpoint for fetching correct answers
+app.post("/correctanswers", authenticate, async (req, res) => {
+  const { questionIds } = req.body;
+
+  if (!Array.isArray(questionIds) || questionIds.length === 0) {
+    return res.status(400).json({ error: "Invalid question IDs" });
+  }
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    const questionIdsString = questionIds.join(",");
+    const result = await pool.request().query(`
+      SELECT QuestionID, CorrectOptionID
+      FROM Answer_Key
+      WHERE QuestionID IN (${questionIdsString})
+    `);
+
+    const correctAnswers = {};
+    result.recordset.forEach((row) => {
+      correctAnswers[row.QuestionID] = row.CorrectOptionID;
+    });
+
+    res.json({ correctAnswers });
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Backend server is running on http://localhost:${port}`);
 });

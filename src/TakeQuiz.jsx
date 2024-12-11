@@ -13,6 +13,7 @@ const TakeQuiz = () => {
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [startTime, setStartTime] = useState(null);
 
   // Find the course code from the courses context
   const course = courses.find(
@@ -45,6 +46,7 @@ const TakeQuiz = () => {
         const data = await response.json();
         if (response.ok) {
           setQuestions(data);
+          setStartTime(new Date()); // Note the start time
         } else {
           setError(data.error || "Failed to fetch questions");
         }
@@ -70,32 +72,121 @@ const TakeQuiz = () => {
       alert("Please answer all questions before submitting.");
       return;
     }
-    console.log("Submitting quiz:", answers);
-    // try {
-    //   const response = await fetch(`http://localhost:3000/submitquiz`, {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "x-username": username,
-    //       "x-password": password,
-    //     },
-    //     body: JSON.stringify({
-    //       studentId: userData[0].StudentID,
-    //       courseId: courseCode,
-    //       answers,
-    //     }),
-    //   });
-    //   const data = await response.json();
-    //   if (response.ok) {
-    //     alert("Quiz submitted successfully!");
-    //     navigate(`/student/course/${courseId}`);
-    //   } else {
-    //     alert(data.error || "Failed to submit quiz");
-    //   }
-    // } catch (error) {
-    //   alert("Error connecting to server");
-    // }
+
+    const endTime = new Date(); // Note the end time
+    const totalMarks = questions.length;
+    let obtainedMarks = 0;
+
+    // Fetch correct answers from Answer_Key
+    const correctAnswers = await fetchCorrectAnswers();
+
+    // Calculate obtained marks
+    questions.forEach((question) => {
+      const correctOptionId = correctAnswers[question.QuestionID];
+      if (answers[question.QuestionID] === correctOptionId) {
+        obtainedMarks += 1;
+      }
+    });
+
+    const progressPercentage = (obtainedMarks / totalMarks) * 100;
+    const scholasticStatus = progressPercentage >= 60 ? "Pass" : "Fail";
+
+    // Insert into Quiz_Session
+    const quizSessionId = await insertQuizSession(
+      userData[0].StudentID,
+      course.Course_id,
+      startTime,
+      endTime,
+      totalMarks,
+      obtainedMarks,
+      progressPercentage,
+      scholasticStatus
+    );
+
+    // Insert into Attempted_Quiz
+    await insertAttemptedQuiz(
+      quizSessionId,
+      questions,
+      answers,
+      correctAnswers
+    );
+
+    alert("Quiz submitted successfully!");
+    navigate(`/student/course/${courseId}`);
   };
+
+  const fetchCorrectAnswers = async () => {
+    const response = await fetch(`http://localhost:3000/correctanswers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-username": username,
+        "x-password": password,
+      },
+      body: JSON.stringify({
+        questionIds: questions.map((q) => q.QuestionID),
+      }),
+    });
+    const data = await response.json();
+    return data.correctAnswers;
+  };
+
+  const insertQuizSession = async (
+    studentId,
+    courseId,
+    startTime,
+    endTime,
+    totalMarks,
+    obtainedMarks,
+    progressPercentage,
+    scholasticStatus
+  ) => {
+    const response = await fetch(`http://localhost:3000/insertquizsession`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-username": username,
+        "x-password": password,
+      },
+      body: JSON.stringify({
+        studentId,
+        courseId,
+        startTime,
+        endTime,
+        totalMarks,
+        obtainedMarks,
+        progressPercentage,
+        scholasticStatus,
+      }),
+    });
+    const data = await response.json();
+    return data.quizSessionId;
+  };
+
+  const insertAttemptedQuiz = async (
+    quizSessionId,
+    questions,
+    answers,
+    correctAnswers
+  ) => {
+    const response = await fetch(`http://localhost:3000/insertattemptedquiz`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-username": username,
+        "x-password": password,
+      },
+      body: JSON.stringify({
+        quizSessionId,
+        questions,
+        answers,
+        correctAnswers,
+      }),
+    });
+    const data = await response.json();
+    return data.message;
+  };
+
   console.log("Questions:", questions);
   return (
     <div className="p-4">
