@@ -159,31 +159,6 @@ app.get("/courses", authenticate, async (req, res) => {
   }
 });
 
-// Endpoint for fetching students
-app.get("/students", authenticate, async (req, res) => {
-  console.log("Students endpoint reached");
-  try {
-    const pool = await sql.connect({
-      user: req.headers["x-username"],
-      password: req.headers["x-password"],
-      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
-      database: "quizmasterpro",
-      options: {
-        encrypt: true,
-        trustServerCertificate: true,
-        connectionTimeout: 30000,
-        enableArithAbort: true,
-      },
-    });
-    const result = await pool.request().query("SELECT * FROM Student");
-    console.log("Query executed successfully");
-    res.json(result.recordset);
-  } catch (err) {
-    console.error("SQL error:", err);
-    res.status(500).json({ error: "SQL error" });
-  }
-});
-
 // Endpoint for fetching degree programs
 app.get("/degreeprograms", authenticate, async (req, res) => {
   console.log("Degree programs endpoint reached");
@@ -392,6 +367,52 @@ app.get("/progress", authenticate, async (req, res) => {
               GROUP BY Course.Course_Name`);
     console.log("Query executed successfully");
     res.json(result.recordset);
+  } catch (err) {
+    console.error("SQL error:", err);
+    res.status(500).json({ error: "SQL error" });
+  }
+});
+
+// Endpoint for fetching 10 random quizzes
+app.get("/randomquizzes", authenticate, async (req, res) => {
+  const courseId = req.query.courseId;
+  const limit = parseInt(req.query.limit, 10) || 10;
+  const studentId = req.headers["x-studentid"];
+
+  try {
+    const pool = await sql.connect({
+      user: req.headers["x-username"],
+      password: req.headers["x-password"],
+      server: "quizmasterpro.c568kmee42lu.eu-north-1.rds.amazonaws.com",
+      database: "quizmasterpro",
+      options: {
+        encrypt: true,
+        trustServerCertificate: true,
+        connectionTimeout: 30000,
+        enableArithAbort: true,
+      },
+    });
+
+    const questionsResult = await pool
+      .request()
+      .input("CourseCode", sql.NVarChar, courseId)
+      .input("Limit", sql.Int, limit)
+      .input("StudentID", sql.Int, studentId)
+      .execute("GetRandomQuestions");
+
+    const questions = questionsResult.recordset;
+    for (const question of questions) {
+      const optionsResult = await pool
+        .request()
+        .input("questionId", sql.Int, question.QuestionID).query(`
+          SELECT *
+          FROM Option_Bank
+          WHERE QuestionID = @questionId
+        `);
+      question.Options = optionsResult.recordset;
+    }
+
+    res.json(questions);
   } catch (err) {
     console.error("SQL error:", err);
     res.status(500).json({ error: "SQL error" });

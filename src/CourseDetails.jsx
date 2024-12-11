@@ -1,11 +1,12 @@
 // src/CourseDetails.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "./components/AuthContext";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const CourseDetails = () => {
   const { username, password, userData } = useContext(AuthContext);
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const [courseDetails, setCourseDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,7 +15,7 @@ const CourseDetails = () => {
     const fetchCourseDetails = async () => {
       setLoading(true);
       setError(null);
-      console.log("courseId:", courseId);
+
       try {
         const response = await fetch(
           `http://localhost:3000/coursedetails?studentId=${userData[0].StudentID}&courseId=${courseId}`,
@@ -42,10 +43,15 @@ const CourseDetails = () => {
 
     fetchCourseDetails();
   }, [username, password, userData, courseId]);
+
+  const handleTakeQuiz = () => {
+    navigate(`/student/course/${courseId}/take-quiz`);
+  };
+
   console.log("Course Details:", courseDetails);
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Course Details</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">Course Details</h2>
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error}</p>}
       {courseDetails && (
@@ -70,6 +76,12 @@ const CourseDetails = () => {
                 </div>
               ))}
           </div>
+          <button
+            onClick={handleTakeQuiz}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4"
+          >
+            Take Quiz
+          </button>
         </div>
       )}
     </div>

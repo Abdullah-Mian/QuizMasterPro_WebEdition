@@ -43,7 +43,7 @@ export const ProgressProvider = ({ children }) => {
       }
     };
     if (loginType === "student") {
-      fetchProgressData();
+      // fetchProgressData();
     }
   }, [username, password, userData]);
 

@@ -13,6 +13,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import Progress from "./Progress";
 import Analytics from "./Analytics";
 import CourseDetails from "./CourseDetails";
+import TakeQuiz from "./TakeQuiz";
 
 function App() {
   const {
@@ -125,6 +126,16 @@ function App() {
           element={
             verified && loginType === "student" ? (
               <CourseDetails />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/student/course/:courseId/take-quiz"
+          element={
+            verified && loginType === "student" ? (
+              <TakeQuiz />
             ) : (
               <Navigate to="/login" />
             )
