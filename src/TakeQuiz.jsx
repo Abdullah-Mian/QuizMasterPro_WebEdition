@@ -1,15 +1,15 @@
-// src/TakeQuiz.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "./components/AuthContext";
 import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
 import { useParams, useNavigate } from "react-router-dom";
+import { QuestionsProvider, useQuestions } from "./components/QuestionsContext";
 
 const TakeQuiz = () => {
   const { username, password, userData } = useContext(AuthContext);
   const { courses } = useContext(DegreeProgramsContext);
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState([]);
+  const { questions, setQuestions, newFetched, setNewFetched } = useQuestions();
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -27,7 +27,7 @@ const TakeQuiz = () => {
         setError("Course not found");
         return;
       }
-
+      console.log("Fetching questions for course");
       setLoading(true);
       setError(null);
       try {
@@ -46,6 +46,8 @@ const TakeQuiz = () => {
         const data = await response.json();
         if (response.ok) {
           setQuestions(data);
+          setNewFetched(true);
+          setAnswers({});
           setStartTime(new Date()); // Note the start time
         } else {
           setError(data.error || "Failed to fetch questions");
@@ -57,8 +59,10 @@ const TakeQuiz = () => {
       }
     };
 
-    fetchQuestions();
-  }, [username, password, courseCode, userData]);
+    if (questions.length === 0 && newFetched === false) {
+      fetchQuestions();
+    }
+  }, [courseCode]);
 
   const handleOptionChange = (questionId, optionId) => {
     setAnswers((prevAnswers) => ({
@@ -69,6 +73,8 @@ const TakeQuiz = () => {
 
   const handleSubmit = async () => {
     if (Object.keys(answers).length !== questions.length) {
+      console.log("answers.length", answers);
+      console.log("questions.length", questions.length);
       alert("Please answer all questions before submitting.");
       return;
     }
@@ -90,7 +96,14 @@ const TakeQuiz = () => {
 
     const progressPercentage = (obtainedMarks / totalMarks) * 100;
     const scholasticStatus = progressPercentage >= 60 ? "Pass" : "Fail";
-
+    console.log("Start Time:", startTime);
+    console.log("End Time:", endTime);
+    console.log("Total Marks:", totalMarks);
+    console.log("Obtained Marks:", obtainedMarks);
+    console.log("Progress Percentage:", progressPercentage);
+    console.log("Scholastic Status:", scholasticStatus);
+    console.log("Answers:", answers);
+    console.log("Correct Answers:", correctAnswers);
     // Insert into Quiz_Session
     const quizSessionId = await insertQuizSession(
       userData[0].StudentID,
@@ -102,7 +115,7 @@ const TakeQuiz = () => {
       progressPercentage,
       scholasticStatus
     );
-
+    console.log("Quiz Session ID:", quizSessionId);
     // Insert into Attempted_Quiz
     await insertAttemptedQuiz(
       quizSessionId,
@@ -111,8 +124,12 @@ const TakeQuiz = () => {
       correctAnswers
     );
 
+    // Reset questions context
+    // setQuestions([]);
+    // setNewFetched(false);
+
     alert("Quiz submitted successfully!");
-    navigate(`/student/course/${courseId}`);
+    // navigate(`/student/course/${courseId}`);
   };
 
   const fetchCorrectAnswers = async () => {
@@ -186,14 +203,14 @@ const TakeQuiz = () => {
     const data = await response.json();
     return data.message;
   };
-
+  console.log("Answers:", answers);
   console.log("Questions:", questions);
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Take Quiz</h2>
       {loading && <p>Loading...</p>}
       {error && <p>Error: {error}</p>}
-      {!loading && !error && questions.length > 0 && (
+      {!loading && !error && newFetched && questions.length > 0 && (
         <div>
           {questions.map((question, index) => (
             <div key={question.QuestionID} className="mb-4">
@@ -209,6 +226,18 @@ const TakeQuiz = () => {
                     onChange={(e) => {
                       handleOptionChange(question.QuestionID, option.OptionID);
                       console.log(question, e.target.id);
+                      if (e.target.checked) {
+                        setAnswers((prevAnswers) => ({
+                          ...prevAnswers,
+                          [question.QuestionID]: option.OptionID,
+                        }));
+                      } else {
+                        setAnswers((prevAnswers) => {
+                          const newAnswers = { ...prevAnswers };
+                          delete newAnswers[question.QuestionID];
+                          return newAnswers;
+                        });
+                      }
                     }}
                     className="mr-2"
                   />
@@ -231,4 +260,10 @@ const TakeQuiz = () => {
   );
 };
 
-export default TakeQuiz;
+const TakeQuizWithProvider = () => (
+  <QuestionsProvider>
+    <TakeQuiz />
+  </QuestionsProvider>
+);
+
+export default TakeQuizWithProvider;

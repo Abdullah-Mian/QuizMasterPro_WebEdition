@@ -51,8 +51,6 @@ app.post("/login", async (req, res) => {
 
 // Middleware for authentication
 const authenticate = (req, res, next) => {
-  console.log("Authenticate middleware - Headers:", req.headers);
-
   const username = req.headers["x-username"];
   const password = req.headers["x-password"];
 
