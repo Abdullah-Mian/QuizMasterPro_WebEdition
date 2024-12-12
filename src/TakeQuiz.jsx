@@ -27,7 +27,6 @@ const TakeQuiz = () => {
         setError("Course not found");
         return;
       }
-      console.log("Fetching questions for course");
       setLoading(true);
       setError(null);
       try {
@@ -73,8 +72,6 @@ const TakeQuiz = () => {
 
   const handleSubmit = async () => {
     if (Object.keys(answers).length !== questions.length) {
-      console.log("answers.length", answers);
-      console.log("questions.length", questions.length);
       alert("Please answer all questions before submitting.");
       return;
     }
@@ -96,14 +93,7 @@ const TakeQuiz = () => {
 
     const progressPercentage = (obtainedMarks / totalMarks) * 100;
     const scholasticStatus = progressPercentage >= 60 ? "Pass" : "Fail";
-    console.log("Start Time:", startTime);
-    console.log("End Time:", endTime);
-    console.log("Total Marks:", totalMarks);
-    console.log("Obtained Marks:", obtainedMarks);
-    console.log("Progress Percentage:", progressPercentage);
-    console.log("Scholastic Status:", scholasticStatus);
-    console.log("Answers:", answers);
-    console.log("Correct Answers:", correctAnswers);
+
     // Insert into Quiz_Session
     const quizSessionId = await insertQuizSession(
       userData[0].StudentID,
@@ -115,21 +105,26 @@ const TakeQuiz = () => {
       progressPercentage,
       scholasticStatus
     );
-    console.log("Quiz Session ID:", quizSessionId);
     // Insert into Attempted_Quiz
-    await insertAttemptedQuiz(
+    const confirmationMessage = await insertAttemptedQuiz(
       quizSessionId,
       questions,
       answers,
       correctAnswers
     );
 
+    console.log("confirmationMessage:", confirmationMessage.message);
     // Reset questions context
-    // setQuestions([]);
-    // setNewFetched(false);
-
-    alert("Quiz submitted successfully!");
-    // navigate(`/student/course/${courseId}`);
+    setQuestions([]);
+    setNewFetched(false);
+    // Show confirmation message
+    if (confirmationMessage.message) {
+      alert("Quiz submitted successfully!");
+    } else {
+      alert("Quiz submission failed!");
+    }
+    // Redirect to course page
+    navigate(`/student/course/${courseId}`);
   };
 
   const fetchCorrectAnswers = async () => {
@@ -195,16 +190,52 @@ const TakeQuiz = () => {
       },
       body: JSON.stringify({
         quizSessionId,
-        questions,
-        answers,
-        correctAnswers,
+        questionString1: questions[0].Question_String,
+        studentAnswer1: answers[questions[0].QuestionID]?.toString() || "",
+        correctAnswer1:
+          correctAnswers[questions[0].QuestionID]?.toString() || "",
+        questionString2: questions[1].Question_String,
+        studentAnswer2: answers[questions[1].QuestionID]?.toString() || "",
+        correctAnswer2:
+          correctAnswers[questions[1].QuestionID]?.toString() || "",
+        questionString3: questions[2].Question_String,
+        studentAnswer3: answers[questions[2].QuestionID]?.toString() || "",
+        correctAnswer3:
+          correctAnswers[questions[2].QuestionID]?.toString() || "",
+        questionString4: questions[3].Question_String,
+        studentAnswer4: answers[questions[3].QuestionID]?.toString() || "",
+        correctAnswer4:
+          correctAnswers[questions[3].QuestionID]?.toString() || "",
+        questionString5: questions[4].Question_String,
+        studentAnswer5: answers[questions[4].QuestionID]?.toString() || "",
+        correctAnswer5:
+          correctAnswers[questions[4].QuestionID]?.toString() || "",
+        questionString6: questions[5].Question_String,
+        studentAnswer6: answers[questions[5].QuestionID]?.toString() || "",
+        correctAnswer6:
+          correctAnswers[questions[5].QuestionID]?.toString() || "",
+        questionString7: questions[6].Question_String,
+        studentAnswer7: answers[questions[6].QuestionID]?.toString() || "",
+        correctAnswer7:
+          correctAnswers[questions[6].QuestionID]?.toString() || "",
+        questionString8: questions[7].Question_String,
+        studentAnswer8: answers[questions[7].QuestionID]?.toString() || "",
+        correctAnswer8:
+          correctAnswers[questions[7].QuestionID]?.toString() || "",
+        questionString9: questions[8].Question_String,
+        studentAnswer9: answers[questions[8].QuestionID]?.toString() || "",
+        correctAnswer9:
+          correctAnswers[questions[8].QuestionID]?.toString() || "",
+        questionString10: questions[9].Question_String,
+        studentAnswer10: answers[questions[9].QuestionID]?.toString() || "",
+        correctAnswer10:
+          correctAnswers[questions[9].QuestionID]?.toString() || "",
       }),
     });
     const data = await response.json();
-    return data.message;
+    return data;
   };
-  console.log("Answers:", answers);
-  console.log("Questions:", questions);
+
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Take Quiz</h2>
@@ -225,7 +256,6 @@ const TakeQuiz = () => {
                     checked={answers[question.QuestionID] === option.OptionID}
                     onChange={(e) => {
                       handleOptionChange(question.QuestionID, option.OptionID);
-                      console.log(question, e.target.id);
                       if (e.target.checked) {
                         setAnswers((prevAnswers) => ({
                           ...prevAnswers,

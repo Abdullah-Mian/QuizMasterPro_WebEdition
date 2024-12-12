@@ -88,10 +88,7 @@ app.get("/userverification", authenticate, async (req, res) => {
   console.log("User verification endpoint reached");
   const username = req.headers["x-username"];
   const loginType = req.headers["x-logintype"];
-  console.log("Attempting user verification...");
-  console.log("Login type:", loginType);
-  console.log("Username:", username);
-  console.log("Password:", req.headers["x-password"]);
+
   try {
     const pool = await sql.connect({
       user: req.headers["x-username"],
@@ -116,7 +113,6 @@ app.get("/userverification", authenticate, async (req, res) => {
     }
 
     const result = await pool.request().query(query);
-    console.log("Query result:", result); // Log the entire result object
     if (result.recordset.length === 0) {
       return res.status(401).json({ error: "User verification failed" });
     }
@@ -465,7 +461,39 @@ app.post("/insertquizsession", authenticate, async (req, res) => {
 
 // Endpoint for inserting attempted quiz
 app.post("/insertattemptedquiz", authenticate, async (req, res) => {
-  const { quizSessionId, questions, answers, correctAnswers } = req.body;
+  const {
+    quizSessionId,
+    questionString1,
+    studentAnswer1,
+    correctAnswer1,
+    questionString2,
+    studentAnswer2,
+    correctAnswer2,
+    questionString3,
+    studentAnswer3,
+    correctAnswer3,
+    questionString4,
+    studentAnswer4,
+    correctAnswer4,
+    questionString5,
+    studentAnswer5,
+    correctAnswer5,
+    questionString6,
+    studentAnswer6,
+    correctAnswer6,
+    questionString7,
+    studentAnswer7,
+    correctAnswer7,
+    questionString8,
+    studentAnswer8,
+    correctAnswer8,
+    questionString9,
+    studentAnswer9,
+    correctAnswer9,
+    questionString10,
+    studentAnswer10,
+    correctAnswer10,
+  } = req.body;
 
   try {
     const pool = await sql.connect({
@@ -481,15 +509,42 @@ app.post("/insertattemptedquiz", authenticate, async (req, res) => {
       },
     });
 
-    await pool
+    const result = await pool
       .request()
       .input("QuizSessionID", sql.Int, quizSessionId)
-      .input("Questions", sql.NVarChar, JSON.stringify(questions))
-      .input("Answers", sql.NVarChar, JSON.stringify(answers))
-      .input("CorrectAnswers", sql.NVarChar, JSON.stringify(correctAnswers))
+      .input("QuestionString1", sql.NVarChar, questionString1 || "")
+      .input("StudentAnswer1", sql.NVarChar, studentAnswer1 || "")
+      .input("CorrectAnswer1", sql.NVarChar, correctAnswer1 || "")
+      .input("QuestionString2", sql.NVarChar, questionString2 || "")
+      .input("StudentAnswer2", sql.NVarChar, studentAnswer2 || "")
+      .input("CorrectAnswer2", sql.NVarChar, correctAnswer2 || "")
+      .input("QuestionString3", sql.NVarChar, questionString3 || "")
+      .input("StudentAnswer3", sql.NVarChar, studentAnswer3 || "")
+      .input("CorrectAnswer3", sql.NVarChar, correctAnswer3 || "")
+      .input("QuestionString4", sql.NVarChar, questionString4 || "")
+      .input("StudentAnswer4", sql.NVarChar, studentAnswer4 || "")
+      .input("CorrectAnswer4", sql.NVarChar, correctAnswer4 || "")
+      .input("QuestionString5", sql.NVarChar, questionString5 || "")
+      .input("StudentAnswer5", sql.NVarChar, studentAnswer5 || "")
+      .input("CorrectAnswer5", sql.NVarChar, correctAnswer5 || "")
+      .input("QuestionString6", sql.NVarChar, questionString6 || "")
+      .input("StudentAnswer6", sql.NVarChar, studentAnswer6 || "")
+      .input("CorrectAnswer6", sql.NVarChar, correctAnswer6 || "")
+      .input("QuestionString7", sql.NVarChar, questionString7 || "")
+      .input("StudentAnswer7", sql.NVarChar, studentAnswer7 || "")
+      .input("CorrectAnswer7", sql.NVarChar, correctAnswer7 || "")
+      .input("QuestionString8", sql.NVarChar, questionString8 || "")
+      .input("StudentAnswer8", sql.NVarChar, studentAnswer8 || "")
+      .input("CorrectAnswer8", sql.NVarChar, correctAnswer8 || "")
+      .input("QuestionString9", sql.NVarChar, questionString9 || "")
+      .input("StudentAnswer9", sql.NVarChar, studentAnswer9 || "")
+      .input("CorrectAnswer9", sql.NVarChar, correctAnswer9 || "")
+      .input("QuestionString10", sql.NVarChar, questionString10 || "")
+      .input("StudentAnswer10", sql.NVarChar, studentAnswer10 || "")
+      .input("CorrectAnswer10", sql.NVarChar, correctAnswer10 || "")
       .execute("InsertAttemptedQuiz");
 
-    res.json({ message: "Attempted quiz inserted successfully" });
+    res.json({ message: result.recordset[0].ConfirmationMessage });
   } catch (err) {
     console.error("Error inserting attempted quiz:", err);
     res.status(500).json({ error: "Error inserting attempted quiz" });

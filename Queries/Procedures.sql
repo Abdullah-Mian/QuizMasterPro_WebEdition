@@ -1,3 +1,4 @@
+-- Get Random Questions Procedure
 CREATE OR ALTER PROCEDURE GetRandomQuestions
     @CourseCode NVARCHAR(50),
     @Limit INT,
@@ -9,16 +10,18 @@ BEGIN
     SELECT TOP (@Limit) q.QuestionID, q.Question_String, q.Course_Code
     FROM Question_Bank q
     LEFT JOIN Attempted_Quiz aq ON q.Question_String = aq.Question_String
-    LEFT JOIN Quiz_Session qs ON aq.Quiz_SessionID = qs.Quiz_SessionID
     WHERE q.Course_Code = @CourseCode
-    AND (qs.StudentID IS NULL OR qs.StudentID != @StudentID)
     ORDER BY NEWID();
 END;
 GO
+
+-- Execute GetRandomQuestions Procedure
 EXEC GetRandomQuestions @CourseCode = 'CS101', @Limit = 10, @StudentID = 1;
+GO
 
 -------------------------------------------------------------------------------
 
+-- Insert Quiz Session Procedure
 CREATE OR ALTER PROCEDURE InsertQuizSession
     @StudentID INT,
     @CourseID INT,
@@ -39,61 +42,38 @@ BEGIN
 END;
 GO
 
+-- Insert Attempted Quiz Procedure
 CREATE OR ALTER PROCEDURE InsertAttemptedQuiz
     @QuizSessionID INT,
-    @Questions NVARCHAR(MAX), -- JSON string containing question details
-    @Answers NVARCHAR(MAX), -- JSON string containing student answers
-    @CorrectAnswers NVARCHAR(MAX) -- JSON string containing correct answers
+    @QuestionString1 NVARCHAR(255), @StudentAnswer1 NVARCHAR(255), @CorrectAnswer1 NVARCHAR(255),
+    @QuestionString2 NVARCHAR(255), @StudentAnswer2 NVARCHAR(255), @CorrectAnswer2 NVARCHAR(255),
+    @QuestionString3 NVARCHAR(255), @StudentAnswer3 NVARCHAR(255), @CorrectAnswer3 NVARCHAR(255),
+    @QuestionString4 NVARCHAR(255), @StudentAnswer4 NVARCHAR(255), @CorrectAnswer4 NVARCHAR(255),
+    @QuestionString5 NVARCHAR(255), @StudentAnswer5 NVARCHAR(255), @CorrectAnswer5 NVARCHAR(255),
+    @QuestionString6 NVARCHAR(255), @StudentAnswer6 NVARCHAR(255), @CorrectAnswer6 NVARCHAR(255),
+    @QuestionString7 NVARCHAR(255), @StudentAnswer7 NVARCHAR(255), @CorrectAnswer7 NVARCHAR(255),
+    @QuestionString8 NVARCHAR(255), @StudentAnswer8 NVARCHAR(255), @CorrectAnswer8 NVARCHAR(255),
+    @QuestionString9 NVARCHAR(255), @StudentAnswer9 NVARCHAR(255), @CorrectAnswer9 NVARCHAR(255),
+    @QuestionString10 NVARCHAR(255), @StudentAnswer10 NVARCHAR(255), @CorrectAnswer10 NVARCHAR(255)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @QuestionID INT;
-    DECLARE @QuestionString NVARCHAR(255);
-    DECLARE @ActualAnswer NVARCHAR(255);
-    DECLARE @StudentAnswer NVARCHAR(255);
-    DECLARE @IsCorrect BIT;
+    -- Insert data into Attempted_Quiz
+    INSERT INTO Attempted_Quiz (Quiz_SessionID, Question_String, Actual_Answer, Student_Answer, Is_Correct)
+    VALUES 
+        (@QuizSessionID, @QuestionString1, @CorrectAnswer1, @StudentAnswer1, CASE WHEN @StudentAnswer1 = @CorrectAnswer1 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString2, @CorrectAnswer2, @StudentAnswer2, CASE WHEN @StudentAnswer2 = @CorrectAnswer2 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString3, @CorrectAnswer3, @StudentAnswer3, CASE WHEN @StudentAnswer3 = @CorrectAnswer3 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString4, @CorrectAnswer4, @StudentAnswer4, CASE WHEN @StudentAnswer4 = @CorrectAnswer4 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString5, @CorrectAnswer5, @StudentAnswer5, CASE WHEN @StudentAnswer5 = @CorrectAnswer5 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString6, @CorrectAnswer6, @StudentAnswer6, CASE WHEN @StudentAnswer6 = @CorrectAnswer6 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString7, @CorrectAnswer7, @StudentAnswer7, CASE WHEN @StudentAnswer7 = @CorrectAnswer7 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString8, @CorrectAnswer8, @StudentAnswer8, CASE WHEN @StudentAnswer8 = @CorrectAnswer8 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString9, @CorrectAnswer9, @StudentAnswer9, CASE WHEN @StudentAnswer9 = @CorrectAnswer9 THEN 1 ELSE 0 END),
+        (@QuizSessionID, @QuestionString10, @CorrectAnswer10, @StudentAnswer10, CASE WHEN @StudentAnswer10 = @CorrectAnswer10 THEN 1 ELSE 0 END);
 
-    DECLARE @QuestionTable TABLE (QuestionID INT, QuestionString NVARCHAR(255));
-    INSERT INTO @QuestionTable (QuestionID, QuestionString)
-    SELECT QuestionID, QuestionString
-    FROM OPENJSON(@Questions)
-    WITH (QuestionID INT, QuestionString NVARCHAR(255));
-
-    DECLARE @AnswerTable TABLE (QuestionID INT, SelectedOptionID INT);
-    INSERT INTO @AnswerTable (QuestionID, SelectedOptionID)
-    SELECT QuestionID, SelectedOptionID
-    FROM OPENJSON(@Answers)
-    WITH (QuestionID INT, SelectedOptionID INT);
-
-    DECLARE @CorrectAnswerTable TABLE (QuestionID INT, CorrectOptionID INT);
-    INSERT INTO @CorrectAnswerTable (QuestionID, CorrectOptionID)
-    SELECT QuestionID, CorrectOptionID
-    FROM OPENJSON(@CorrectAnswers)
-    WITH (QuestionID INT, CorrectOptionID INT);
-
-    DECLARE answer_cursor CURSOR FOR
-    SELECT q.QuestionID, q.QuestionString, a.SelectedOptionID, c.CorrectOptionID
-    FROM @QuestionTable q
-    JOIN @AnswerTable a ON q.QuestionID = a.QuestionID
-    JOIN @CorrectAnswerTable c ON q.QuestionID = c.QuestionID;
-
-    OPEN answer_cursor;
-    FETCH NEXT FROM answer_cursor INTO @QuestionID, @QuestionString, @StudentAnswer, @ActualAnswer;
-
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-        SET @IsCorrect = CASE WHEN @StudentAnswer = @ActualAnswer THEN 1 ELSE 0 END;
-
-        INSERT INTO Attempted_Quiz (Quiz_SessionID, Question_String, Actual_Answer, Student_Answer, Is_Correct)
-        VALUES (@QuizSessionID, @QuestionString, (SELECT Option_String FROM Option_Bank WHERE OptionID = @ActualAnswer), (SELECT Option_String FROM Option_Bank WHERE OptionID = @StudentAnswer), @IsCorrect);
-
-        FETCH NEXT FROM answer_cursor INTO @QuestionID, @QuestionString, @StudentAnswer, @ActualAnswer;
-    END;
-
-    CLOSE answer_cursor;
-    DEALLOCATE answer_cursor;
+    -- Return a confirmation message
+    SELECT 'Insertion into Attempted_Quiz table was successful' AS ConfirmationMessage;
 END;
 GO
-
--------------------------------------------------------------------------------
