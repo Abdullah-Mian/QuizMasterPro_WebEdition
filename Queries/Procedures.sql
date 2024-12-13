@@ -1,3 +1,4 @@
+-- For Route /randomquizzes
 -- Get Random Questions Procedure
 CREATE OR ALTER PROCEDURE GetRandomQuestions
     @CourseCode NVARCHAR(50),
@@ -21,7 +22,7 @@ EXEC GetRandomQuestions @CourseCode = 'CS101', @Limit = 10, @StudentID = 1;
 GO
 
 -------------------------------------------------------------------------------
-
+-- For Route /insertquizsession
 -- Insert Quiz Session Procedure
 CREATE OR ALTER PROCEDURE InsertQuizSession
     @StudentID INT,
@@ -45,6 +46,8 @@ BEGIN
 END;
 GO
 
+------------------------------------------------------------------------------------------------
+-- For Route /insertattemptedquiz
 -- Insert Attempted Quiz Procedure
 CREATE OR ALTER PROCEDURE InsertAttemptedQuiz
     @QuizSessionID INT,
@@ -103,7 +106,6 @@ END;
 GO
 
 ------------------------------------------------------------------------------------------------
-
 -- Create or alter Procedure for fetching all students
 CREATE PROCEDURE GetStudentsByDegProg
     @DegProg NVARCHAR(50)
@@ -113,6 +115,69 @@ BEGIN
     FROM Student
     WHERE Deg_Prog = @DegProg;
 END
+GO
+
+------------------------------------------------------------------------------------------------
+-- For Route /studentcourses
+CREATE PROCEDURE GetStudentCourses
+    @StudentID INT
+AS
+BEGIN
+    SELECT
+        Course.Course_id,
+        Course.Course_Code,
+        Course.Course_Name,
+        (SELECT COUNT(*)
+        FROM Quiz_Session
+        WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = @StudentID) AS AttemptedQuizzes,
+        (SELECT AVG(Progress_Percentage)
+        FROM Quiz_Session
+        WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = @StudentID) AS Progress_Percentage
+    FROM
+        Course
+        INNER JOIN
+        Student_Course ON Course.Course_id = Student_Course.Course_id
+    WHERE
+         Student_Course.StudentID = @StudentID;
+END
+ GO
+
+------------------------------------------------------------------------------------------------
+-- For Route /coursedetails
+CREATE PROCEDURE GetCourseDetails
+    @StudentID INT,
+    @CourseID INT
+AS
+BEGIN
+    SELECT
+        Course.Course_Code,
+        Course.Course_Name,
+        (SELECT COUNT(*)
+        FROM Quiz_Session
+        WHERE Quiz_Session.Course_id = Course.Course_id
+            AND Quiz_Session.StudentID = @StudentID) AS AttemptedQuizzes,
+        (SELECT STRING_AGG(CONCAT(Quiz_SessionID, ',', Obtained_Marks, ',', Quiz_TotalScore), ';')
+        FROM Quiz_Session
+        WHERE Quiz_Session.Course_id = Course.Course_id
+            AND Quiz_Session.StudentID = @StudentID) AS QuizDetails
+    FROM
+        Course
+    WHERE 
+        Course.Course_id = @CourseID;
+END;
+GO
+------------------------------------------------------------------------------------------------
+-- For Route /correctanswers
+CREATE PROCEDURE GetCorrectAnswers
+    @QuestionIDs NVARCHAR(MAX)
+AS
+BEGIN
+    DECLARE @SQL NVARCHAR(MAX);
+    SET @SQL = 'SELECT QuestionID, CorrectOptionID FROM Answer_Key WHERE QuestionID IN (' + @QuestionIDs + ')';
+    EXEC sp_executesql @SQL;
+END;
+GO
+EXEC GetCorrectAnswers @QuestionIDs = '1,2,3,4,5';
 GO
 ------------------------------------- VIEWS ----------------------------------------------------
 

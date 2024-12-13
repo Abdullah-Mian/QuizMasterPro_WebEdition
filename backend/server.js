@@ -281,14 +281,12 @@ app.get("/studentcourses", authenticate, async (req, res) => {
       },
     });
 
-    const result = await pool.request()
-      .query(`SELECT Course.Course_id, Course.Course_Code, Course.Course_Name, 
-              (SELECT COUNT(*) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes,
-              (SELECT AVG(Progress_Percentage) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS Progress_Percentage
-              FROM Course
-              INNER JOIN Student_Course ON Course.Course_id = Student_Course.Course_id
-              WHERE Student_Course.StudentID = ${studentId}`);
-    console.log("Query executed successfully");
+    const result = await pool
+      .request()
+      .input("StudentID", sql.Int, studentId)
+      .execute("GetStudentCourses");
+
+    console.log("Procedure executed successfully");
     res.json(result.recordset);
   } catch (err) {
     console.error("SQL error:", err);
@@ -316,22 +314,13 @@ app.get("/coursedetails", authenticate, async (req, res) => {
       },
     });
 
-    const result = await pool.request().query(`SELECT 
-    Course.Course_Code, 
-    Course.Course_Name, 
-    (SELECT COUNT(*) 
-     FROM Quiz_Session 
-     WHERE Quiz_Session.Course_id = Course.Course_id 
-       AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes,
-    (SELECT STRING_AGG(CONCAT(Quiz_SessionID, ',', Obtained_Marks, ',', Quiz_TotalScore), ';') 
-     FROM Quiz_Session 
-     WHERE Quiz_Session.Course_id = Course.Course_id 
-       AND Quiz_Session.StudentID = ${studentId}) AS QuizDetails
-      FROM 
-      Course
-      WHERE 
-    Course.Course_id = ${courseId}`);
-    console.log("Query executed successfully");
+    const result = await pool
+      .request()
+      .input("StudentID", sql.Int, studentId)
+      .input("CourseID", sql.Int, courseId)
+      .execute("GetCourseDetails");
+
+    console.log("Procedure executed successfully");
     res.json(result.recordset[0]);
   } catch (err) {
     console.error("SQL error:", err);
@@ -579,11 +568,10 @@ app.post("/correctanswers", authenticate, async (req, res) => {
     });
 
     const questionIdsString = questionIds.join(",");
-    const result = await pool.request().query(`
-      SELECT QuestionID, CorrectOptionID
-      FROM Answer_Key
-      WHERE QuestionID IN (${questionIdsString})
-    `);
+    const result = await pool
+      .request()
+      .input("QuestionIDs", sql.NVarChar, questionIdsString)
+      .execute("GetCorrectAnswers");
 
     const correctAnswers = {};
     result.recordset.forEach((row) => {

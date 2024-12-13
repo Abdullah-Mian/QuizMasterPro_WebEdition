@@ -15,12 +15,14 @@ GRANT SELECT ON Student_Course TO Student;
 GRANT SELECT ON Question_Bank TO Student;
 GRANT SELECT ON Option_Bank TO Student;
 GRANT SELECT ON Answer_Key TO Student;
--- Grant EXECUTE permissions to the Student role
+-- Grant EXECUTE permissions to the Student role for GetCorrectAnswers procedure
+GRANT EXECUTE ON OBJECT::dbo.GetCorrectAnswers TO Student;
+-- Grant EXECUTE permissions to the Student role for GetCourseDetails procedure
+GRANT EXECUTE ON OBJECT::dbo.GetCourseDetails TO Student;
+-- Grant EXECUTE permissions to the Student role for GetStudentCourses procedure
+GRANT EXECUTE ON OBJECT::dbo.GetStudentCourses TO Student;
+-- Grant EXECUTE permissions to the Student role for GetRandomQuestions procedure
 GRANT EXECUTE ON OBJECT::GetRandomQuestions TO Student;
--- Grant EXECUTE permissions to the Student role for InsertQuizSession procedure
-GRANT EXECUTE ON OBJECT::dbo.InsertQuizSession TO Student;
--- Grant EXECUTE permissions to the Student role for InsertAttemptedQuiz procedure
-GRANT EXECUTE ON OBJECT::dbo.InsertAttemptedQuiz TO Student;
 -- Grant EXECUTE permissions to the Student role for InsertQuizSession procedure
 GRANT EXECUTE ON OBJECT::dbo.InsertQuizSession TO Student;
 -- Grant EXECUTE permissions to the Student role for InsertAttemptedQuiz procedure

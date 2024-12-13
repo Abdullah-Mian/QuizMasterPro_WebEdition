@@ -24,7 +24,10 @@ const StudentCourses = () => {
                   <span>
                     {course.Course_Code} - {course.Course_Name}
                   </span>
-                  <span>Attempted Quizzes: {course.AttemptedQuizzes}</span>
+                  <span>
+                    Average Result : {course.Progress_Percentage ?? 0} %
+                  </span>
+                  <span>Attempted Quizzes: {course.AttemptedQuizzes ?? 0}</span>
                 </div>
               </div>
             </Link>
