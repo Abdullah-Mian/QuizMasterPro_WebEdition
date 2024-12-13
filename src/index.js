@@ -3,9 +3,9 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { AuthProvider } from "./components/AuthContext";
-import { DegreeProgramsProvider } from "./components/DegreeProgramsContext";
-import { ProgressProvider } from "./ProgressContext";
+import { AuthProvider } from "./Contexts/AuthContext";
+import { DegreeProgramsProvider } from "./Contexts/DegreeProgramsContext";
+import { ProgressProvider } from "./Contexts/ProgressContext";
 import { BrowserRouter as Router } from "react-router-dom";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

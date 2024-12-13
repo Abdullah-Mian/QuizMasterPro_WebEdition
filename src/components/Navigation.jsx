@@ -1,7 +1,7 @@
 // src/Navigation.js
 import React, { useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../Contexts/AuthContext";
 import { motion } from "framer-motion";
 import {
   FaGraduationCap,

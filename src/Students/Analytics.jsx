@@ -1,8 +1,8 @@
 // src/Analytics.jsx
 import React, { useContext, useEffect, useState } from "react";
-import { ProgressContext } from "./ProgressContext";
-import { AuthContext } from "./components/AuthContext";
-import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
+import { ProgressContext } from "../Contexts/ProgressContext";
+import { AuthContext } from "../Contexts/AuthContext";
+import { DegreeProgramsContext } from "../Contexts/DegreeProgramsContext";
 import { motion } from "framer-motion";
 import {
   Chart as ChartJS,

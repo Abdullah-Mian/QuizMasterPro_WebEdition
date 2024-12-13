@@ -1,9 +1,8 @@
 // src/AdminDashboard.js
 import React, { useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../Contexts/AuthContext";
 import { Routes, Route, Link } from "react-router-dom";
 import DegreePrograms from "./DegreePrograms";
-// import Students from "../Students";
 import EnrollStudent from "./EnrollStudent";
 
 const AdminDashboard = () => {

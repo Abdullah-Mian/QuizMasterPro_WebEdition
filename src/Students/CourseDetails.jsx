@@ -1,7 +1,7 @@
 // src/CourseDetails.jsx
 import React, { useEffect, useState, useContext } from "react";
-import { AuthContext } from "./components/AuthContext";
-import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
+import { AuthContext } from "../Contexts/AuthContext";
+import { DegreeProgramsContext } from "../Contexts/DegreeProgramsContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {

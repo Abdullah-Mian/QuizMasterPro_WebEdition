@@ -1,7 +1,7 @@
 // src/StudentDashboard.js
 import React, { useContext, useEffect } from "react";
-import { AuthContext } from "./components/AuthContext";
-import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
+import { AuthContext } from "../Contexts/AuthContext";
+import { DegreeProgramsContext } from "../Contexts/DegreeProgramsContext";
 import { Routes, Route } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaGraduationCap, FaBook, FaChartLine } from "react-icons/fa";

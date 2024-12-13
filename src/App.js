@@ -5,15 +5,13 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./components/Login";
 import Home from "./components/Home";
 import Navigation from "./components/Navigation";
-import { AuthContext } from "./components/AuthContext";
-import { DegreeProgramsProvider } from "./components/DegreeProgramsContext";
-import { ProgressProvider } from "./ProgressContext";
-import StudentDashboard from "./StudentDashboard";
-import AdminDashboard from "./components/AdminDashboard";
-import Progress from "./Progress";
-import Analytics from "./Analytics";
-import CourseDetails from "./CourseDetails";
-import TakeQuiz from "./TakeQuiz";
+import { AuthContext } from "./Contexts/AuthContext";
+import StudentDashboard from "./Students/StudentDashboard";
+import AdminDashboard from "./Admins/AdminDashboard";
+import Progress from "./Students/Progress";
+import Analytics from "./Students/Analytics";
+import CourseDetails from "./Students/CourseDetails";
+import TakeQuiz from "./Students/TakeQuiz";
 
 function App() {
   const {

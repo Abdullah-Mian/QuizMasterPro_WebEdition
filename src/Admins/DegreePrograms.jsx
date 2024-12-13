@@ -1,7 +1,7 @@
 // src/DegreePrograms.js
 import React, { useEffect, useState, useContext } from "react";
-import { AuthContext } from "./AuthContext";
-import { DegreeProgramsContext } from "./DegreeProgramsContext";
+import { AuthContext } from "../Contexts/AuthContext";
+import { DegreeProgramsContext } from "../Contexts/DegreeProgramsContext";
 
 const DegreePrograms = () => {
   const { username, password } = useContext(AuthContext);

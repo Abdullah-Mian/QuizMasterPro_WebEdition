@@ -1,6 +1,6 @@
 // src/DegreeProgramsContext.js
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../Contexts/AuthContext";
 
 export const DegreeProgramsContext = createContext({
   degreePrograms: [],

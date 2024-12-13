@@ -1,8 +1,7 @@
 // src/Progress.jsx
 import React, { useContext, useEffect, useState } from "react";
-import { ProgressContext } from "./ProgressContext";
-import { AuthContext } from "./components/AuthContext";
-import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
+import { AuthContext } from "../Contexts/AuthContext";
+import { DegreeProgramsContext } from "../Contexts/DegreeProgramsContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaBook,

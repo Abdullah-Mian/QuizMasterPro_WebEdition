@@ -1,7 +1,7 @@
 // src/StudentCourses.jsx
 import React, { useContext } from "react";
-import { AuthContext } from "./components/AuthContext";
-import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
+import { AuthContext } from "../Contexts/AuthContext";
+import { DegreeProgramsContext } from "../Contexts/DegreeProgramsContext";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaBook, FaChartLine, FaClock } from "react-icons/fa";

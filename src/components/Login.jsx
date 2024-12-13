@@ -1,6 +1,6 @@
 // src/Login.js
 import React, { useState, useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../Contexts/AuthContext";
 import { motion } from "framer-motion";
 import { FaUser, FaLock, FaUserGraduate, FaUserShield } from "react-icons/fa";
 

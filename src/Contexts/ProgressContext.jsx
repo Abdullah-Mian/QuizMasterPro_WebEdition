@@ -1,6 +1,6 @@
 // src/components/ProgressContext.jsx
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { AuthContext } from "./components/AuthContext";
+import { AuthContext } from "./AuthContext";
 
 export const ProgressContext = createContext({
   progressData: [],
