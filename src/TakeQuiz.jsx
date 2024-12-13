@@ -235,7 +235,7 @@ const TakeQuiz = () => {
     const data = await response.json();
     return data;
   };
-
+  console.log("Questions", questions);
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Take Quiz</h2>

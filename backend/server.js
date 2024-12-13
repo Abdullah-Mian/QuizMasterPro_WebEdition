@@ -281,12 +281,14 @@ app.get("/studentcourses", authenticate, async (req, res) => {
       },
     });
 
-    const result = await pool
-      .request()
-      .input("StudentID", sql.Int, studentId)
-      .execute("GetStudentCourses");
-
-    console.log("Procedure executed successfully");
+    const result = await pool.request()
+      .query(`SELECT Course.Course_id, Course.Course_Code, Course.Course_Name, 
+              (SELECT COUNT(*) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS AttemptedQuizzes,
+              (SELECT AVG(Progress_Percentage) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = ${studentId}) AS Progress_Percentage
+              FROM Course
+              INNER JOIN Student_Course ON Course.Course_id = Student_Course.Course_id
+              WHERE Student_Course.StudentID = ${studentId}`);
+    console.log("Query executed successfully");
     res.json(result.recordset);
   } catch (err) {
     console.error("SQL error:", err);
@@ -314,14 +316,44 @@ app.get("/coursedetails", authenticate, async (req, res) => {
       },
     });
 
-    const result = await pool
+    const courseDetailsResult = await pool
       .request()
       .input("StudentID", sql.Int, studentId)
       .input("CourseID", sql.Int, courseId)
       .execute("GetCourseDetails");
 
+    const courseDetails = courseDetailsResult.recordset[0];
+
+    const quizDetails = courseDetails.QuizDetails.split(";").map((quiz) => {
+      const [
+        QuizSessionID,
+        ObtainedMarks,
+        QuizTotalScore,
+        ProgressPercentage,
+        ScholasticStatus,
+      ] = quiz.split(",");
+      return {
+        QuizSessionID,
+        ObtainedMarks,
+        QuizTotalScore,
+        ProgressPercentage,
+        ScholasticStatus,
+      };
+    });
+
+    for (const quiz of quizDetails) {
+      const questionsResult = await pool
+        .request()
+        .input("QuizSessionID", sql.Int, quiz.QuizSessionID)
+        .execute("GetQuizQuestions");
+
+      quiz.Questions = questionsResult.recordset;
+    }
+
+    courseDetails.QuizDetails = quizDetails;
+
     console.log("Procedure executed successfully");
-    res.json(result.recordset[0]);
+    res.json(courseDetails);
   } catch (err) {
     console.error("SQL error:", err);
     res.status(500).json({ error: "SQL error" });
@@ -568,10 +600,11 @@ app.post("/correctanswers", authenticate, async (req, res) => {
     });
 
     const questionIdsString = questionIds.join(",");
-    const result = await pool
-      .request()
-      .input("QuestionIDs", sql.NVarChar, questionIdsString)
-      .execute("GetCorrectAnswers");
+    const result = await pool.request().query(`
+      SELECT QuestionID, CorrectOptionID
+      FROM Answer_Key
+      WHERE QuestionID IN (${questionIdsString})
+    `);
 
     const correctAnswers = {};
     result.recordset.forEach((row) => {

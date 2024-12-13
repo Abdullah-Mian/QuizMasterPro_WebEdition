@@ -10,6 +10,7 @@ const CourseDetails = () => {
   const [courseDetails, setCourseDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [expandedQuiz, setExpandedQuiz] = useState(null);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -44,6 +45,14 @@ const CourseDetails = () => {
     fetchCourseDetails();
   }, [username, password, userData, courseId]);
 
+  const handleToggleQuiz = (quizSessionID) => {
+    if (expandedQuiz === quizSessionID) {
+      setExpandedQuiz(null);
+    } else {
+      setExpandedQuiz(quizSessionID);
+    }
+  };
+
   const handleTakeQuiz = () => {
     navigate(`/student/course/${courseId}/take-quiz`);
   };
@@ -59,20 +68,44 @@ const CourseDetails = () => {
           <h3 className="text-xl font-bold">
             {courseDetails.Course_Name} {courseDetails.Course_Code}
           </h3>
-          <h4 className="text-lg font-bold mt-4">Attempted Quizzes</h4>
+          <h4 className="text-lg font-bold mt-4">
+            Attempted Quizzes #{courseDetails.AttemptedQuizzes || 0}
+          </h4>
           <div className="space-y-2">
-            {Array.isArray(courseDetails.AttemptedQuizzes) &&
-              courseDetails.AttemptedQuizzes.map((quiz, index) => (
+            {Array.isArray(courseDetails.QuizDetails) &&
+              courseDetails.QuizDetails.map((quiz, index) => (
                 <div
                   key={index}
                   className="border-t border-b border-gray-300 rounded-lg p-4 bg-gray-800 text-white"
                 >
-                  <div className="flex justify-between items-center">
-                    <span>Quiz ID: {quiz.Quiz_SessionID}</span>
+                  <div
+                    className="flex justify-between items-center cursor-pointer"
+                    onClick={() => handleToggleQuiz(quiz.QuizSessionID)}
+                  >
+                    <span>Quiz ID: {quiz.QuizSessionID}</span>
                     <span>
-                      Score: {quiz.Obtained_Marks}/{quiz.Quiz_TotalScore}
+                      Score: {quiz.ObtainedMarks}/{quiz.QuizTotalScore} (
+                      {quiz.ProgressPercentage}%)
+                    </span>
+                    <span>
+                      {expandedQuiz === quiz.QuizSessionID ? "▲" : "▼"}
                     </span>
                   </div>
+                  {expandedQuiz === quiz.QuizSessionID && (
+                    <div className="mt-4 space-y-2">
+                      <p>Scholastic Status: {quiz.ScholasticStatus}</p>
+                      {quiz.Questions.map((question, qIndex) => (
+                        <div
+                          key={qIndex}
+                          className="pl-4 border-t border-b border-gray-300 rounded-lg p-4 bg-gray-700 text-white"
+                        >
+                          <p>Question: {question.Question_String}</p>
+                          <p>Correct Answer: {question.Actual_Answer}</p>
+                          <p>Your Answer: {question.Student_Answer}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
           </div>

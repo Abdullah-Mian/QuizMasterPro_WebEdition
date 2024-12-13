@@ -1,13 +1,45 @@
 // src/Navigation.js
 import React, { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
+import { motion } from "framer-motion";
+import {
+  FaGraduationCap,
+  FaChartLine,
+  FaSignOutAlt,
+  FaSignInAlt,
+  FaTachometerAlt,
+  FaUserPlus,
+  FaChartBar,
+} from "react-icons/fa";
+
+const NavLink = ({ to, children, icon }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+
+  return (
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+      <Link
+        to={to}
+        className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300 ${
+          isActive
+            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+            : "text-gray-700 hover:bg-gray-100"
+        }`}
+      >
+        {icon}
+        <span>{children}</span>
+      </Link>
+    </motion.div>
+  );
+};
 
 const Navigation = () => {
   const { username, setUsername, setPassword, setLoginType, setVerified } =
-    React.useContext(AuthContext);
+    useContext(AuthContext);
   const navigate = useNavigate();
-  const { loginType } = React.useContext(AuthContext);
+  const { loginType } = useContext(AuthContext);
+
   const handleLogout = () => {
     setUsername("");
     setPassword("");
@@ -17,63 +49,87 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="navbar p-4 shadow-lg sticky top-0 bg-white z-50">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold">
-          QuizMasterPro
-        </Link>
-        <div className="flex space-x-4">
-          {loginType === "admin" && (
-            <Link
-              to="/admin/enroll"
-              className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
-              style={{ minWidth: "100px" }}
-            >
-              Enorll Students
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200"
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center space-x-2"
+          >
+            <Link to="/" className="flex items-center space-x-2">
+              <FaGraduationCap className="text-3xl text-blue-600" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                QuizMasterPro
+              </span>
             </Link>
-          )}
+          </motion.div>
 
-          <Link
-            to={loginType === "admin" ? "/admin" : "/student"}
-            className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
-            style={{ minWidth: "100px" }}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/progress"
-            className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
-            style={{ minWidth: "100px" }}
-          >
-            Progress
-          </Link>
-          <Link
-            to="/analytics"
-            className="px-4 py-2 rounded text-white hover:text-[#07ada0] text-center"
-            style={{ minWidth: "100px" }}
-          >
-            Analytics
-          </Link>
-          {username ? (
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded  hover:text-[#07ada0] text-center"
-              style={{ minWidth: "100px" }}
+          <div className="hidden md:flex items-center space-x-4">
+            {loginType === "admin" && (
+              <NavLink
+                to="/admin/enroll"
+                icon={<FaUserPlus className="text-lg" />}
+              >
+                Enroll Students
+              </NavLink>
+            )}
+
+            <NavLink
+              to={loginType === "admin" ? "/admin" : "/student"}
+              icon={<FaTachometerAlt className="text-lg" />}
             >
-              Logout
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              className="px-4 py-2 rounded  hover:text-[#07ada0] text-center"
-              style={{ minWidth: "100px" }}
+              Dashboard
+            </NavLink>
+
+            <NavLink to="/progress" icon={<FaChartLine className="text-lg" />}>
+              Progress
+            </NavLink>
+
+            <NavLink to="/analytics" icon={<FaChartBar className="text-lg" />}>
+              Analytics
+            </NavLink>
+
+            {username ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-lg flex items-center space-x-2 text-gray-700 hover:bg-gray-100 transition-all duration-300"
+              >
+                <FaSignOutAlt className="text-lg" />
+                <span>Logout</span>
+              </motion.button>
+            ) : (
+              <NavLink to="/login" icon={<FaSignInAlt className="text-lg" />}>
+                Login
+              </NavLink>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="md:hidden rounded-lg p-2 hover:bg-gray-100"
+          >
+            <svg
+              className="h-6 w-6 text-gray-600"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              Login
-            </Link>
-          )}
+              <path d="M4 6h16M4 12h16m-16 6h16"></path>
+            </svg>
+          </motion.button>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 
