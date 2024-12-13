@@ -3,6 +3,79 @@ import { AuthContext } from "./components/AuthContext";
 import { DegreeProgramsContext } from "./components/DegreeProgramsContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { QuestionsProvider, useQuestions } from "./components/QuestionsContext";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaClock,
+  FaCheckCircle,
+  FaQuestion,
+  FaExclamationTriangle,
+} from "react-icons/fa";
+
+const QuestionCard = ({
+  question,
+  index,
+  totalQuestions,
+  answer,
+  onAnswerChange,
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 shadow-lg mb-6"
+  >
+    <div className="flex items-center justify-between mb-4">
+      <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+        Question {index + 1} of {totalQuestions}
+      </span>
+      <span className="text-gray-400">
+        <FaQuestion className="inline mr-2" />
+        {question.Course_Code}
+      </span>
+    </div>
+
+    <h3 className="text-xl font-semibold text-white mb-6">
+      {question.Question_String}
+    </h3>
+
+    <div className="space-y-3">
+      {question.Options.map((option) => (
+        <motion.label
+          key={option.OptionID}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className={`block cursor-pointer ${
+            answer === option.OptionID
+              ? "bg-blue-500/20 border-blue-500"
+              : "bg-gray-700/50 border-gray-600"
+          } border-2 rounded-lg p-4 transition-all duration-300`}
+        >
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={answer === option.OptionID}
+              onChange={() =>
+                onAnswerChange(question.QuestionID, option.OptionID)
+              }
+              className="hidden"
+            />
+            <div
+              className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                answer === option.OptionID
+                  ? "border-blue-500 bg-blue-500"
+                  : "border-gray-400"
+              }`}
+            >
+              {answer === option.OptionID && (
+                <FaCheckCircle className="text-white text-sm" />
+              )}
+            </div>
+            <span className="text-white">{option.Option_String}</span>
+          </div>
+        </motion.label>
+      ))}
+    </div>
+  </motion.div>
+);
 
 const TakeQuiz = () => {
   const { username, password, userData } = useContext(AuthContext);
@@ -237,56 +310,79 @@ const TakeQuiz = () => {
   };
   console.log("Questions", questions);
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Take Quiz</h2>
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
-      {!loading && !error && newFetched && questions.length > 0 && (
-        <div>
-          {questions.map((question, index) => (
-            <div key={question.QuestionID} className="mb-4">
-              <p className="text-lg font-bold">
-                {index + 1}. {question.Question_String}
-              </p>
-              {question.Options.map((option) => (
-                <div key={option.OptionID} className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id={`option-${option.OptionID}`}
-                    checked={answers[question.QuestionID] === option.OptionID}
-                    onChange={(e) => {
-                      handleOptionChange(question.QuestionID, option.OptionID);
-                      if (e.target.checked) {
-                        setAnswers((prevAnswers) => ({
-                          ...prevAnswers,
-                          [question.QuestionID]: option.OptionID,
-                        }));
-                      } else {
-                        setAnswers((prevAnswers) => {
-                          const newAnswers = { ...prevAnswers };
-                          delete newAnswers[question.QuestionID];
-                          return newAnswers;
-                        });
-                      }
-                    }}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`option-${option.OptionID}`}>
-                    {option.Option_String}
-                  </label>
-                </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 p-6"
+    >
+      <div className="max-w-4xl mx-auto">
+        {loading && (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        )}
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-500/20 border border-red-500 text-red-500 p-4 rounded-lg mb-6"
+          >
+            <FaExclamationTriangle className="inline mr-2" />
+            {error}
+          </motion.div>
+        )}
+
+        {!loading && !error && newFetched && questions.length > 0 && (
+          <div>
+            <motion.div
+              initial={{ y: -20 }}
+              animate={{ y: 0 }}
+              className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-white shadow-xl mb-6"
+            >
+              <h2 className="text-2xl font-bold mb-2">
+                {course?.Course_Name} Quiz
+              </h2>
+              <div className="flex items-center space-x-4">
+                <span className="px-3 py-1 bg-blue-500/20 rounded-full text-sm">
+                  {course?.Course_Code}
+                </span>
+                <span className="flex items-center">
+                  <FaClock className="mr-2" />
+                  {startTime && (
+                    <span>
+                      Started at {new Date(startTime).toLocaleTimeString()}
+                    </span>
+                  )}
+                </span>
+              </div>
+            </motion.div>
+
+            <div className="space-y-6">
+              {questions.map((question, index) => (
+                <QuestionCard
+                  key={question.QuestionID}
+                  question={question}
+                  index={index}
+                  totalQuestions={questions.length}
+                  answer={answers[question.QuestionID]}
+                  onAnswerChange={handleOptionChange}
+                />
               ))}
             </div>
-          ))}
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4"
-          >
-            Submit
-          </button>
-        </div>
-      )}
-    </div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleSubmit}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 mt-6"
+            >
+              Submit Quiz
+            </motion.button>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 

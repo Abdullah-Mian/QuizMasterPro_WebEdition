@@ -316,41 +316,50 @@ app.get("/coursedetails", authenticate, async (req, res) => {
       },
     });
 
-    const courseDetailsResult = await pool
+    const result = await pool
       .request()
       .input("StudentID", sql.Int, studentId)
       .input("CourseID", sql.Int, courseId)
-      .execute("GetCourseDetails");
+      .execute("GetCourseDetailsWithOptionStrings");
 
-    const courseDetails = courseDetailsResult.recordset[0];
+    const courseDetails = result.recordsets[0][0];
+    const questions = result.recordsets[1];
 
-    const quizDetails = courseDetails.QuizDetails.split(";").map((quiz) => {
-      const [
-        QuizSessionID,
-        ObtainedMarks,
-        QuizTotalScore,
-        ProgressPercentage,
-        ScholasticStatus,
-      ] = quiz.split(",");
-      return {
-        QuizSessionID,
-        ObtainedMarks,
-        QuizTotalScore,
-        ProgressPercentage,
-        ScholasticStatus,
-      };
+    // Group questions by QuizSessionID
+    const quizDetailsMap = {};
+    questions.forEach((q) => {
+      if (!quizDetailsMap[q.Quiz_SessionID]) {
+        quizDetailsMap[q.Quiz_SessionID] = [];
+      }
+      quizDetailsMap[q.Quiz_SessionID].push({
+        Question_String: q.Question_String,
+        Actual_Answer: q.Actual_Answer,
+        Student_Answer: q.Student_Answer,
+      });
     });
 
-    for (const quiz of quizDetails) {
-      const questionsResult = await pool
-        .request()
-        .input("QuizSessionID", sql.Int, quiz.QuizSessionID)
-        .execute("GetQuizQuestions");
-
-      quiz.Questions = questionsResult.recordset;
+    // Parse QuizDetails string and add questions
+    if (courseDetails.QuizDetails) {
+      courseDetails.QuizDetails = courseDetails.QuizDetails.split(";").map(
+        (quiz) => {
+          const [
+            QuizSessionID,
+            ObtainedMarks,
+            QuizTotalScore,
+            ProgressPercentage,
+            ScholasticStatus,
+          ] = quiz.split(",");
+          return {
+            QuizSessionID,
+            ObtainedMarks,
+            QuizTotalScore,
+            ProgressPercentage,
+            ScholasticStatus,
+            Questions: quizDetailsMap[QuizSessionID] || [],
+          };
+        }
+      );
     }
-
-    courseDetails.QuizDetails = quizDetails;
 
     console.log("Procedure executed successfully");
     res.json(courseDetails);
