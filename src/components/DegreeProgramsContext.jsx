@@ -16,7 +16,7 @@ export const DegreeProgramsContext = createContext({
 export const DegreeProgramsProvider = ({ children }) => {
   const [degreePrograms, setDegreePrograms] = useState([]);
   const [courses, setCourses] = useState([]);
-  const { username, password, verified } = useContext(AuthContext);
+  const { username, password, verified, loginType } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -72,7 +72,7 @@ export const DegreeProgramsProvider = ({ children }) => {
       }
     };
 
-    if (verified) {
+    if (verified && loginType === "admin") {
       fetchDegreePrograms();
       fetchCourses();
     }

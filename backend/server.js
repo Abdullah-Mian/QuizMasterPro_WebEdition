@@ -144,7 +144,7 @@ app.get("/courses", authenticate, async (req, res) => {
         enableArithAbort: true,
       },
     });
-    const result = await pool.request().query("SELECT * FROM Course");
+    const result = await pool.request().query("SELECT * FROM vw_allCourses");
     console.log("Query executed successfully");
     res.json(result.recordset);
   } catch (err) {
@@ -169,7 +169,9 @@ app.get("/degreeprograms", authenticate, async (req, res) => {
         enableArithAbort: true,
       },
     });
-    const result = await pool.request().query("SELECT * FROM Deg_Program");
+    const result = await pool
+      .request()
+      .query("SELECT * FROM vw_allDegreePrograms");
     console.log("Query executed successfully");
     res.json(result.recordset);
   } catch (err) {
@@ -178,7 +180,7 @@ app.get("/degreeprograms", authenticate, async (req, res) => {
   }
 });
 
-// Endpoint for fetching students
+// Endpoint for fetching students by degree program
 app.get("/students", authenticate, async (req, res) => {
   console.log("Students endpoint reached");
   const degProg = req.query.degProg;
@@ -195,10 +197,13 @@ app.get("/students", authenticate, async (req, res) => {
         enableArithAbort: true,
       },
     });
+
     const result = await pool
       .request()
-      .query(`SELECT * FROM Student WHERE Deg_Prog = '${degProg}'`);
-    console.log("Query executed successfully");
+      .input("DegProg", sql.NVarChar, degProg)
+      .execute("GetStudentsByDegProg");
+
+    console.log("Procedure executed successfully");
     res.json(result.recordset);
   } catch (err) {
     console.error("SQL error:", err);
