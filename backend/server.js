@@ -417,7 +417,7 @@ app.get("/randomquizzes", authenticate, async (req, res) => {
       options: {
         encrypt: true,
         trustServerCertificate: true,
-        connectionTimeout: 30000,
+        connectionTimeout: 90000,
         enableArithAbort: true,
       },
     });

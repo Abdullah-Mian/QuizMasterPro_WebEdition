@@ -15,6 +15,8 @@ GRANT SELECT ON Student_Course TO Student;
 GRANT SELECT ON Question_Bank TO Student;
 GRANT SELECT ON Option_Bank TO Student;
 GRANT SELECT ON Answer_Key TO Student;
+GRANT SELECT ON Quiz_Session TO Student;
+
 
 -- Grant EXECUTE permissions to the Student role for GetCourseDetailsWithOptionStrings procedure
 GRANT EXECUTE ON OBJECT::dbo.GetCourseDetailsWithOptionStrings TO Student;
