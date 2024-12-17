@@ -354,3 +354,27 @@ SELECT Course.Course_Code, Course.Course_Name,
               (SELECT Quiz_SessionID, Obtained_Marks, Quiz_TotalScore FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = 1) AS AttemptedQuizzes
               FROM Course
               WHERE Course.Course_id = 1
+                GO
+
+-----------------------------------------Trigger ON Quiz_Session----------------------------------------------
+CREATE OR ALTER TRIGGER trig_QuizSession_Record
+ON Quiz_Session
+FOR INSERT
+AS
+DECLARE @StudentID INT;
+DECLARE @Quiz_SessionID INT;
+DECLARE @Quiz_Date DATE;
+DECLARE @Scholoastic_Status NVARCHAR(50);
+BEGIN
+
+    SELECT @StudentID = StudentID, @Quiz_SessionID = Quiz_SessionID, @Quiz_Date = Quiz_Date
+    FROM INSERTED;
+
+    IF @Quiz_Date > GETDATE()
+    BEGIN
+        RAISERROR('Quiz date cannot be in the future.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END;
+
+    INSERT INTO OperationLog (rollno, operation, performed_by,operation_date, session_id) VALUES (@StudentID, 'INSERT', SYSTEM_USER,@Quiz_Date , @Quiz_SessionID);
+END;
