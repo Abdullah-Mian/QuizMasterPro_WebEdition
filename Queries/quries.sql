@@ -57,6 +57,12 @@ INSERT INTO Student_Course
 VALUES
     (5, 6);
 GO
+
+--
+--student login faizy11 with password faizy123
+--student login Eva with password eva
+--
+
 -- Create login and user for a student
 CREATE LOGIN Theta WITH PASSWORD = 'Theta123!';
 CREATE USER Theta FOR LOGIN Theta;
@@ -87,3 +93,5 @@ CREATE LOGIN AdminLogin1 WITH PASSWORD = 'AdminSecurePass!';
 CREATE USER AdminUser1 FOR LOGIN AdminLogin1;
 ALTER ROLE SuperAdmin ADD MEMBER AdminUser1;
 GO
+
+-- Admin Login Abdullah with PAssword ********

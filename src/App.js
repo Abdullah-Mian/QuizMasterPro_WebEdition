@@ -79,8 +79,7 @@ function App() {
     setError(null);
     navigate("/");
   };
-  console.log("from app.js Verified:", verified);
-  console.log("from app.js loginType:", loginType);
+
   return (
     <div className="App">
       <Navigation />

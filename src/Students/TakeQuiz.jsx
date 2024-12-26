@@ -87,6 +87,7 @@ const TakeQuiz = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [startTime, setStartTime] = useState(null);
+  const [submiited, setSubmitted] = useState(false);
 
   // Find the course code from the courses context
   const course = courses.find(
@@ -148,6 +149,8 @@ const TakeQuiz = () => {
       alert("Please answer all questions before submitting.");
       return;
     }
+    if (submiited) return;
+    setSubmitted(true);
 
     const endTime = new Date(); // Note the end time
     const totalMarks = questions.length;
@@ -197,7 +200,10 @@ const TakeQuiz = () => {
       alert("Quiz submission failed!");
     }
     // Redirect to course page
+
     navigate(`/student/course/${courseId}`);
+    setQuestions([]);
+    setSubmitted(false);
   };
 
   const fetchCorrectAnswers = async () => {
@@ -308,7 +314,6 @@ const TakeQuiz = () => {
     const data = await response.json();
     return data;
   };
-  console.log("Questions", questions);
   return (
     <motion.div
       initial={{ opacity: 0 }}

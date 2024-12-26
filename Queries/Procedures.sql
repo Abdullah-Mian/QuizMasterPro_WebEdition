@@ -21,11 +21,48 @@ GO
 EXEC GetRandomQuestions @CourseCode = 'CS101', @Limit = 10, @StudentID = 1;
 GO
 -------------------------------------------------------------------------------
-CREATE OR ALTER PROCEDURE GetCourseDetails
+-- CREATE OR ALTER PROCEDURE GetCourseDetails
+--     @StudentID INT,
+--     @CourseID INT
+-- AS
+-- BEGIN
+--     SELECT
+--         Course.Course_Code,
+--         Course.Course_Name,
+--         (SELECT COUNT(*)
+--         FROM Quiz_Session
+--         WHERE Quiz_Session.Course_id = Course.Course_id
+--             AND Quiz_Session.StudentID = @StudentID) AS AttemptedQuizzes,
+--         (SELECT STRING_AGG(CONCAT(Quiz_SessionID, ',', Obtained_Marks, ',', Quiz_TotalScore, ',', Progress_Percentage, ',', Scholastic_Status), ';')
+--         FROM Quiz_Session
+--         WHERE Quiz_Session.Course_id = Course.Course_id
+--             AND Quiz_Session.StudentID = @StudentID) AS QuizDetails
+--     FROM Course
+--     WHERE Course.Course_id = @CourseID;
+-- END;
+-- GO
+-------------------------------------------------------------------------------
+-- CREATE OR ALTER PROCEDURE GetQuizQuestions
+--     @QuizSessionID INT
+-- AS
+-- BEGIN
+--     SELECT
+--         aq.Question_String,
+--         aq.Actual_Answer,
+--         aq.Student_Answer
+--     FROM Attempted_Quiz aq
+--     WHERE aq.Quiz_SessionID = @QuizSessionID;
+-- END;
+-- GO
+-------------------------------------------------------------------------------
+CREATE OR ALTER PROCEDURE GetCourseDetailsWithOptionStrings
     @StudentID INT,
     @CourseID INT
 AS
 BEGIN
+    SET NOCOUNT ON;
+
+    -- First result set: Course details
     SELECT
         Course.Course_Code,
         Course.Course_Name,
@@ -39,60 +76,28 @@ BEGIN
             AND Quiz_Session.StudentID = @StudentID) AS QuizDetails
     FROM Course
     WHERE Course.Course_id = @CourseID;
-END;
-GO
--------------------------------------------------------------------------------
-CREATE OR ALTER PROCEDURE GetQuizQuestions
-    @QuizSessionID INT
-AS
-BEGIN
-    SELECT
-        aq.Question_String,
-        aq.Actual_Answer,
-        aq.Student_Answer
-    FROM Attempted_Quiz aq
-    WHERE aq.Quiz_SessionID = @QuizSessionID;
-END;
-GO
--------------------------------------------------------------------------------
-CREATE OR ALTER PROCEDURE GetCourseDetailsWithOptionStrings
-    @StudentID INT,
-    @CourseID INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    -- First result set: Course details
-    SELECT 
-        Course.Course_Code,
-        Course.Course_Name,
-        (SELECT COUNT(*) 
-         FROM Quiz_Session 
-         WHERE Quiz_Session.Course_id = Course.Course_id 
-           AND Quiz_Session.StudentID = @StudentID) AS AttemptedQuizzes,
-        (SELECT STRING_AGG(CONCAT(Quiz_SessionID, ',', Obtained_Marks, ',', Quiz_TotalScore, ',', Progress_Percentage, ',', Scholastic_Status), ';') 
-         FROM Quiz_Session 
-         WHERE Quiz_Session.Course_id = Course.Course_id 
-           AND Quiz_Session.StudentID = @StudentID) AS QuizDetails
-    FROM Course
-    WHERE Course.Course_id = @CourseID;
 
     -- Second result set: Quiz Questions with Option Strings
-    SELECT 
+    SELECT
         aq.Quiz_SessionID,
         aq.Question_String,
         correct_opt.Option_String AS Actual_Answer,
         student_opt.Option_String AS Student_Answer
     FROM Attempted_Quiz aq
-    INNER JOIN Quiz_Session qs 
+        INNER JOIN Quiz_Session qs
         ON aq.Quiz_SessionID = qs.Quiz_SessionID
-    LEFT JOIN Option_Bank correct_opt 
-        ON CAST(aq.Actual_Answer AS INT) = correct_opt.OptionID
-    LEFT JOIN Option_Bank student_opt 
-        ON CAST(aq.Student_Answer AS INT) = student_opt.OptionID
-    WHERE qs.Course_id = @CourseID 
+        LEFT JOIN Option_Bank correct_opt
+        ON aq.Actual_Answer  = correct_opt.OptionID
+        LEFT JOIN Option_Bank student_opt
+        ON aq.Student_Answer = student_opt.OptionID
+    WHERE qs.Course_id = @CourseID
         AND qs.StudentID = @StudentID;
 END;
+
+
+Exec  GetCourseDetailsWithOptionStrings @StudentID= 1, @CourseID =1
+
+			  
 GO
 
 -------------------------------------------------------------------------------
@@ -345,15 +350,21 @@ EXEC EnrollNewStudent
     @DegreeProgram = 'BSCS',
     @Courses = @CoursesXML;
 
-select *  from student_course
-go 
-select * from student
+select *
+from student_course
+go
+select *
+from student
 
-SELECT Course.Course_Code, Course.Course_Name, 
-              (SELECT COUNT(*) FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = 1) AS AttemptedQuizzes,
-              (SELECT Quiz_SessionID, Obtained_Marks, Quiz_TotalScore FROM Quiz_Session WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = 1) AS AttemptedQuizzes
-              FROM Course
-              WHERE Course.Course_id = 1
+SELECT Course.Course_Code, Course.Course_Name,
+    (SELECT COUNT(*)
+    FROM Quiz_Session
+    WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = 1) AS AttemptedQuizzes,
+    (SELECT Quiz_SessionID, Obtained_Marks, Quiz_TotalScore
+    FROM Quiz_Session
+    WHERE Quiz_Session.Course_id = Course.Course_id AND Quiz_Session.StudentID = 1) AS AttemptedQuizzes
+FROM Course
+WHERE Course.Course_id = 1
                 GO
 
 -----------------------------------------Trigger ON Quiz_Session----------------------------------------------
@@ -376,5 +387,8 @@ BEGIN
         ROLLBACK TRANSACTION;
     END;
 
-    INSERT INTO OperationLog (rollno, operation, performed_by,operation_date, session_id) VALUES (@StudentID, 'INSERT', SYSTEM_USER,@Quiz_Date , @Quiz_SessionID);
+    INSERT INTO OperationLog
+        (rollno, operation, performed_by,operation_date, session_id)
+    VALUES
+        (@StudentID, 'INSERT', SYSTEM_USER, @Quiz_Date , @Quiz_SessionID);
 END;
